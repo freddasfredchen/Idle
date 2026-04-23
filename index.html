@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galaktisches Dynastieverwaltungssystem v0.1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div>
+    <div class="title-main">Galaktisches Dynastieverwaltungssystem</div>
+    <div class="title-sub" id="tick-display">PROTOKOLL 00000000 • VERSION 0.1.0-ALPHA</div>
+  </div>
+  <div style="display:flex; align-items:center;">
+    <div>
+      <div class="dynasty-name" id="dynasty-name">Haus von Steinberg</div>
+      <div class="ruler-line" id="ruler-line">Albrecht I. • Generation I • Gierig, Paranoid</div>
+    </div>
+    <button id="save-btn" onclick="manualSave()">SPEICHERN</button>
+  </div>
+</div>
+
+<!-- RESOURCE BAR -->
+<div id="resource-bar"></div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- PLANET PANEL -->
+  <div id="planet-panel">
+    <div class="panel-title" id="planet-title">
+      Kepler Prime — Startkolonie
+      <span id="slot-count">4/12 Bauplätze</span>
+    </div>
+    <div id="building-grid"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="tabs">
+      <button class="tab-btn active" onclick="switchTab('factions', this)">Fakt.</button>
+      <button class="tab-btn" onclick="switchTab('research', this)">Forsch.</button>
+      <button class="tab-btn" onclick="switchTab('decrees', this)">Erlasse</button>
+      <button class="tab-btn" onclick="switchTab('planets', this)">Planeten</button>
+    </div>
+    <div id="tab-content"></div>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="log-panel">
+  <div class="log-title">REICHSCHRONIK</div>
+  <div id="log-entries"></div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/state.js"></script>
+<script src="js/save.js"></script>
+<script src="js/render.js"></script>
+<script src="js/tick.js"></script>
+<script>loadState();</script>
+</body>
+</html>
