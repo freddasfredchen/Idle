@@ -1,5 +1,5 @@
 function hasLab() {
-  return GS.planet.buildings.some(b => b.type === 'lab');
+  return GS.planets.some(p => p.buildings.some(b => b.type === 'lab'));
 }
 
 function canUnlockResearch(id) {

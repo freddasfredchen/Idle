@@ -1,5 +1,5 @@
 function hasMinistry() {
-  return GS.planet.buildings.some(b => b.type === 'ministry');
+  return GS.planets.some(p => p.buildings.some(b => b.type === 'ministry'));
 }
 
 function issueDecree(id) {
