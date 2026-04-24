@@ -2,6 +2,11 @@ function hasShipyard() {
   return GS.planets.some(p => p.buildings.some(b => b.type === 'shipyard'));
 }
 
+let shipsSubview = 'fleet';
+
+function showFleetView() { shipsSubview = 'fleet'; renderShips(); }
+function showColonizeView() { shipsSubview = 'colonize'; renderPlanets(true); }
+
 function buildShip(type) {
   if (!GS || !hasShipyard()) return;
   const s = SHIPS[type];
@@ -64,6 +69,7 @@ function completeRaid() {
 }
 
 function renderShips() {
+  if (shipsSubview === 'colonize') { renderPlanets(true); return; }
   const el = document.getElementById('tab-content');
   if (!hasShipyard()) {
     el.innerHTML = `
@@ -136,20 +142,16 @@ function renderShips() {
     }
   }
 
-  // Colonization status
+  // Colonization
   html += `<div class="research-tier-label">— Kolonisierung —</div>
     <div class="ship-item">
       <div class="ship-desc">Neuer Planet erfordert 1× Kolonisierungsschiff + 1× Kriegsschiff zur Sicherung.</div>
       <div class="ship-meta" style="margin-top:6px;">
         <span class="ship-count">Kolonieschiff: <strong>${fleet.colony || 0}</strong> · Kriegsschiff: <strong>${fleet.warship || 0}</strong></span>
-        <button class="research-btn" ${(fleet.colony || 0) >= 1 && (fleet.warship || 0) >= 1 ? `onclick="startColonization()"` : 'disabled'}>${(fleet.colony || 0) >= 1 && (fleet.warship || 0) >= 1 ? 'Kolonisieren' : '— fehlt'}</button>
+        <button class="research-btn" onclick="showColonizeView()">Planeten ansehen</button>
       </div>
     </div>`;
 
   el.innerHTML = html;
 }
 
-function startColonization() {
-  addLog('info', 'Kolonisierungsmission vorbereitet — Zielsystem wird analysiert. [Folgt in nächster Version]');
-  renderLog();
-}

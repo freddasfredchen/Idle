@@ -72,16 +72,19 @@ function colonizePlanet(planetId) {
   renderAll();
 }
 
-function refreshAvailablePlanets() {
+function refreshAvailablePlanets(showBackBtn = false) {
   GS.availablePlanets = generateAvailablePlanets(5);
-  renderPlanets();
+  renderPlanets(showBackBtn);
 }
 
-function renderPlanets() {
+function renderPlanets(showBackBtn = false) {
   const el = document.getElementById('tab-content');
   let html = `<div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
     <span>Planeten <span style="font-family:'Share Tech Mono',monospace;color:#2e4060;font-size:9px;">${GS.planets.length} kolonisiert</span></span>
-    <button class="planet-view-btn" onclick="refreshAvailablePlanets()" title="Neue Ziele generieren">⟳ Refresh</button>
+    <div style="display:flex;gap:5px;">
+      ${showBackBtn ? `<button class="planet-view-btn" onclick="showFleetView()">← Zurück</button>` : ''}
+      <button class="planet-view-btn" onclick="refreshAvailablePlanets(${showBackBtn})" title="Neue Ziele generieren">⟳ Refresh</button>
+    </div>
   </div>`;
 
   // Colonized planets
@@ -137,6 +140,8 @@ function renderPlanets() {
 function describeModifiers(mods) {
   return Object.entries(mods).map(([bt, m]) => {
     const sym = BLDG[bt]?.sym ?? bt;
-    return `${sym} ${m > 1 ? '+' : ''}${Math.round((m - 1) * 100)}%`;
+    const pct = Math.round((m - 1) * 100);
+    const col = m > 1 ? '#4ade80' : '#f87171';
+    return `<span style="color:${col}">${sym} ${pct > 0 ? '+' : ''}${pct}%</span>`;
   }).join(' · ');
 }

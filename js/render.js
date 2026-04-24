@@ -144,13 +144,12 @@ function renderTab() {
     renderShips();
   } else if (currentTab === 'decrees') {
     renderDecrees();
-  } else if (currentTab === 'planets') {
-    renderPlanets();
   }
 }
 
 function switchTab(tab, btn) {
   currentTab = tab;
+  if (tab !== 'ships') shipsSubview = 'fleet';
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderTab();
