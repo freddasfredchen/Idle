@@ -52,7 +52,7 @@ function renderResources() {
 function renderPlanet() {
   const p = GS.planet;
   document.getElementById('planet-title').innerHTML =
-    `<span style="font-family:'Cinzel',serif">${p.name}</span> — ${p.type} <span>${p.buildings.length}/${p.slots} Bauplätze</span>`;
+    `<span style="font-family:'Cinzel',serif">${p.name}</span> — ${p.type} <span>${p.buildings.length}/${p.slots} Bauplätze</span><button class="help-btn" onclick="showHelp()">?</button>`;
 
   const slotMap = {};
   p.buildings.forEach(b => slotMap[b.slot] = b);
