@@ -9,13 +9,13 @@ function createInitialState() {
       generation: 1,
     },
     resources: {
-      energy:    { v: 150,  cap: 1000, rate: 3.5,   decay: 0,       label: "Energie",    sym: "⚡", col: "#fbbf24" },
-      minerals:  { v: 80,   cap: 500,  rate: 1.2,   decay: 0,       label: "Mineralien", sym: "⬡", col: "#94a3b8" },
-      food:      { v: 200,  cap: 800,  rate: 2.1,   decay: 0,       label: "Nahrung",    sym: "◇", col: "#86efac" },
-      credits:   { v: 500,  cap: 9999, rate: 0.8,   decay: 0,       label: "Credits",    sym: "₡", col: "#c8aa4f" },
-      research:  { v: 20,   cap: 300,  rate: 0.3,   decay: 0,       label: "Forschung",  sym: "⬢", col: "#7dd3fc" },
-      influence: { v: 45,   cap: 200,  rate: 0.15,  decay: -0.03,   label: "Einfluss",   sym: "◈", col: "#e879f9" },
-      loyalty:   { v: 72,   cap: 100,  rate: 0,     decay: -0.005,  label: "Loyalität",  sym: "♥", col: "#f87171" },
+      energy:    { v: 150,  cap: 1000, rate: 0, decay: 0,       label: "Energie",    sym: "⚡", col: "#fbbf24" },
+      minerals:  { v: 80,   cap: 500,  rate: 0, decay: 0,       label: "Mineralien", sym: "⬡", col: "#94a3b8" },
+      food:      { v: 200,  cap: 800,  rate: 0, decay: 0,       label: "Nahrung",    sym: "◇", col: "#86efac" },
+      credits:   { v: 500,  cap: 9999, rate: 0, decay: 0,       label: "Credits",    sym: "₡", col: "#c8aa4f" },
+      research:  { v: 20,   cap: 300,  rate: 0, decay: 0,       label: "Forschung",  sym: "⬢", col: "#7dd3fc" },
+      influence: { v: 45,   cap: 200,  rate: 0, decay: -0.03,   label: "Einfluss",   sym: "◈", col: "#e879f9" },
+      loyalty:   { v: 72,   cap: 100,  rate: 0, decay: -0.005,  label: "Loyalität",  sym: "♥", col: "#f87171" },
     },
     planet: {
       name: "Kepler Prime", type: "Startkolonie", slots: 12,
@@ -64,6 +64,19 @@ function applyOffline(state) {
   return { ...state, resources: newRes, log: newLog, meta: { ...state.meta, lastSaved: now } };
 }
 
+function recalcRates() {
+  for (const [k, r] of Object.entries(GS.resources)) {
+    r.rate = BASE_RATES[k] || 0;
+  }
+  for (const b of GS.planet.buildings) {
+    const meta = BLDG[b.type];
+    if (!meta?.resource) continue;
+    const res = GS.resources[meta.resource];
+    if (!res) continue;
+    res.rate += meta.prod.base + (b.level - 1) * meta.prod.perLevel;
+  }
+}
+
 function loadState() {
   try {
     const saved = localStorage.getItem(SAVE_KEY);
@@ -71,5 +84,6 @@ function loadState() {
   } catch {
     GS = createInitialState();
   }
+  recalcRates();
   renderAll();
 }
