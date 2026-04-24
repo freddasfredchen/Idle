@@ -17,15 +17,20 @@ function createInitialState() {
       influence: { v: 45,   cap: 200,  rate: 0, decay: -0.03,   label: "Einfluss",   sym: "◈", col: "#e879f9" },
       loyalty:   { v: 72,   cap: 100,  rate: 0, decay: -0.005,  label: "Loyalität",  sym: "♥", col: "#f87171" },
     },
-    planet: {
-      name: "Kepler Prime", type: "Startkolonie", slots: 12,
-      buildings: [
-        { id: 1, type: "solar",    name: "Solaranlage Mk.II",       level: 2, slot: 0 },
-        { id: 2, type: "mine",     name: "Asteroidenmine",           level: 1, slot: 1 },
-        { id: 3, type: "farm",     name: "Hydroponie-Komplex",       level: 1, slot: 2 },
-        { id: 4, type: "ministry", name: "Min. f. Wahrh. u. Verw.", level: 1, slot: 3 },
-      ],
-    },
+    planets: [
+      {
+        id: 0, name: "Kepler Prime", type: "Startkolonie",
+        sym: "◉", col: "#fbbf24", slots: 12, modifiers: {},
+        buildings: [
+          { id: 1, type: "solar",    name: "Solaranlage Mk.II",       level: 2, slot: 0 },
+          { id: 2, type: "mine",     name: "Asteroidenmine",           level: 1, slot: 1 },
+          { id: 3, type: "farm",     name: "Hydroponie-Komplex",       level: 1, slot: 2 },
+          { id: 4, type: "ministry", name: "Min. f. Wahrh. u. Verw.", level: 1, slot: 3 },
+        ],
+      },
+    ],
+    activePlanetId: 0,
+    availablePlanets: [],
     factions: [
       { id: "corp",    name: "Patriot. Unternehmerfront",  sat: 62, pow: 35, inf: 28, col: "#fbbf24", lastRebTick: -999, lastCorrTick: -999 },
       { id: "science", name: "Aufgekl. Expansionisten",    sat: 48, pow: 20, inf: 24, col: "#60a5fa", lastRebTick: -999, lastCorrTick: -999 },
@@ -69,7 +74,7 @@ function applyOffline(state) {
 }
 
 function recalcRates() {
-  // Reset rates and caps to base values
+  // Reset rates and caps
   for (const [k, r] of Object.entries(GS.resources)) {
     if (k !== 'energy') r.rate = BASE_RATES[k] || 0;
     if (BASE_CAPS[k] !== undefined) r.cap = BASE_CAPS[k];
@@ -89,17 +94,12 @@ function recalcRates() {
     } else if (e.type === 'drain_mult') {
       researchDrainMult *= e.multiplier;
     } else if (e.type === 'cap_increase') {
-      for (const res of e.resources) {
-        if (GS.resources[res]) GS.resources[res].cap += e.amount;
-      }
+      for (const res of e.resources) { if (GS.resources[res]) GS.resources[res].cap += e.amount; }
     } else if (e.type === 'cap_increase_all') {
-      for (const k of Object.keys(GS.resources)) {
-        if (k !== 'energy') GS.resources[k].cap += e.amount;
-      }
+      for (const k of Object.keys(GS.resources)) { if (k !== 'energy') GS.resources[k].cap += e.amount; }
     } else if (e.type === 'loyalty_decay_mult') {
       loyaltyDecayMult *= e.multiplier;
     }
-    // faction_sat_rate and faction_inf_delta handled in tick / doResearch
   }
 
   // ── Decree rate effects ───────────────────────────────────────
@@ -114,8 +114,8 @@ function recalcRates() {
     const e = d.rateEffects;
     if (e.prod_all_mult) decreeProdAllMult *= e.prod_all_mult;
     if (e.building_mult) {
-      for (const [btype, mult] of Object.entries(e.building_mult)) {
-        decreeBuildMult[btype] = (decreeBuildMult[btype] || 1) * mult;
+      for (const [bt, mult] of Object.entries(e.building_mult)) {
+        decreeBuildMult[bt] = (decreeBuildMult[bt] || 1) * mult;
       }
     }
     if (e.resource_flat) {
@@ -126,24 +126,27 @@ function recalcRates() {
     if (e.loyalty_no_decay) decreeLoyaltyNoDecay = true;
   }
 
-  // Loyalty decay: decree surveillance overrides research multiplier
   if (decreeLoyaltyNoDecay) {
     GS.resources.loyalty.decay = 0;
   } else {
     GS.resources.loyalty.decay = -0.005 * loyaltyDecayMult;
   }
 
-  // ── Energy computation ────────────────────────────────────────
-  let energyProd = 0;
-  let energyDrain = 0;
-  for (const b of GS.planet.buildings) {
-    const meta = BLDG[b.type];
-    if (!meta) continue;
-    if (b.type === 'solar') {
-      const mult = (buildProdMult['solar'] || 1) * (decreeBuildMult['solar'] || 1) * decreeProdAllMult;
-      energyProd += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * mult;
-    } else if (meta.drain) {
-      energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * researchDrainMult;
+  // ── Energy + production across ALL planets ────────────────────
+  let energyProd = 0, energyDrain = 0;
+
+  for (const planet of GS.planets) {
+    const pm = planet.modifiers || {};
+    for (const b of planet.buildings) {
+      const meta = BLDG[b.type];
+      if (!meta) continue;
+      const planetMult = pm[b.type] || 1;
+      if (b.type === 'solar') {
+        const mult = (buildProdMult['solar'] || 1) * (decreeBuildMult['solar'] || 1) * decreeProdAllMult * planetMult;
+        energyProd += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * mult;
+      } else if (meta.drain) {
+        energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * researchDrainMult;
+      }
     }
   }
   GS.resources.energy.v = energyProd;
@@ -152,24 +155,27 @@ function recalcRates() {
 
   const efficiency = energyDrain > 0 ? Math.min(1, energyProd / energyDrain) : 1;
 
-  // ── Building production rates ─────────────────────────────────
-  for (const b of GS.planet.buildings) {
-    if (b.type === 'solar') continue;
-    const meta = BLDG[b.type];
-    if (!meta?.resource) continue;
-    const res = GS.resources[meta.resource];
-    if (!res) continue;
-    const researchMult = buildProdMult[b.type] || 1;
-    const decreeMult = (decreeBuildMult[b.type] || 1) * decreeProdAllMult;
-    res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * researchMult * decreeMult;
+  for (const planet of GS.planets) {
+    const pm = planet.modifiers || {};
+    for (const b of planet.buildings) {
+      if (b.type === 'solar') continue;
+      const meta = BLDG[b.type];
+      if (!meta?.resource) continue;
+      const res = GS.resources[meta.resource];
+      if (!res) continue;
+      const researchMult = buildProdMult[b.type] || 1;
+      const decreeMult   = (decreeBuildMult[b.type] || 1) * decreeProdAllMult;
+      const planetMult   = pm[b.type] || 1;
+      res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * researchMult * decreeMult * planetMult;
+    }
   }
 
-  // Flat rate bonuses from active decrees
+  // Decree flat rate bonuses
   for (const [res, delta] of Object.entries(decreeFlatRate)) {
     if (GS.resources[res]) GS.resources[res].rate += delta;
   }
 
-  // Trade ship passive income + specialist bonuses
+  // Trade ships + specialists
   if (GS.fleet) {
     GS.resources.credits.rate += (GS.fleet.trade || 0) * 0.2;
     for (const s of (GS.fleet.specialists || [])) {
@@ -177,7 +183,7 @@ function recalcRates() {
     }
   }
 
-  // Passive corruption drain when faction power > 80
+  // Corruption drain
   for (const f of (GS.factions || [])) {
     const pow = f.pow || 0;
     if (pow > 80) GS.resources.credits.rate -= (pow - 80) * 0.003;
@@ -191,15 +197,32 @@ function loadState() {
   } catch {
     GS = createInitialState();
   }
-  if (!GS.research) GS.research = [];
-  if (!GS.decrees)  GS.decrees  = [];
-  if (!GS.fleet)    GS.fleet    = { colony: 0, trade: 0, warship: 0, raidActive: false, raidEndTick: 0, specialists: [] };
-  if (!GS.fleet.specialists) GS.fleet.specialists = [];
-  for (const f of GS.factions) {
-    if (f.pow           === undefined) f.pow           = 30;
-    if (f.lastRebTick   === undefined) f.lastRebTick   = -999;
-    if (f.lastCorrTick  === undefined) f.lastCorrTick  = -999;
+
+  // Migrations for old saves
+  if (GS.planet && !GS.planets) {
+    GS.planets = [{ id: 0, sym: '◉', col: '#fbbf24', modifiers: {}, ...GS.planet }];
+    GS.activePlanetId = 0;
+    delete GS.planet;
   }
+  if (!GS.activePlanetId) GS.activePlanetId = 0;
+  if (!GS.research)  GS.research  = [];
+  if (!GS.decrees)   GS.decrees   = [];
+  if (!GS.fleet)     GS.fleet     = { colony: 0, trade: 0, warship: 0, raidActive: false, raidEndTick: 0, specialists: [] };
+  if (!GS.fleet.specialists) GS.fleet.specialists = [];
+
+  for (const f of GS.factions) {
+    if (f.pow          === undefined) f.pow          = 30;
+    if (f.lastRebTick  === undefined) f.lastRebTick  = -999;
+    if (f.lastCorrTick === undefined) f.lastCorrTick = -999;
+  }
+
+  // Generate available planets if missing (depends on generatePlanet in planets.js)
+  if (!GS.availablePlanets || GS.availablePlanets.length < 5) {
+    const have = GS.availablePlanets || [];
+    while (have.length < 5) have.push(generatePlanet(Date.now() + have.length));
+    GS.availablePlanets = have;
+  }
+
   recalcRates();
   renderAll();
 }

@@ -6,6 +6,25 @@ const FACTION_POW_BASE_RATE = 0.001;
 const RAID_DURATION_TICKS = 60;
 const RAID_COST = { credits: 30, influence: 10 };
 
+// modifiers: { buildingType: productionMultiplier }
+const PLANET_TYPES = [
+  { type: "Mineralreiche Welt",  sym: "⬡", col: "#94a3b8", modifiers: { mine: 1.5, farm: 0.7 },                    desc: "+50% Minen · −30% Farmen" },
+  { type: "Agrarwelt",           sym: "◇", col: "#86efac", modifiers: { farm: 1.6, mine: 0.8 },                    desc: "+60% Farmen · −20% Minen" },
+  { type: "Handelsknoten",       sym: "₡", col: "#c8aa4f", modifiers: { ministry: 1.4, shipyard: 1.3 },            desc: "+40% Ministerium · +30% Raumwerft" },
+  { type: "Forschungskolonie",   sym: "⬢", col: "#7dd3fc", modifiers: { lab: 1.6, mine: 0.8 },                    desc: "+60% Labor · −20% Minen" },
+  { type: "Militärstützpunkt",   sym: "▲", col: "#f87171", modifiers: { barracks: 1.7, shipyard: 1.2 },            desc: "+70% Kaserne · +20% Raumwerft" },
+  { type: "Energiereiche Welt",  sym: "◉", col: "#fbbf24", modifiers: { solar: 1.8, farm: 0.75 },                  desc: "+80% Solar · −25% Farmen" },
+  { type: "Politisches Zentrum", sym: "◈", col: "#e879f9", modifiers: { ministry: 1.5, shipyard: 1.3, lab: 0.8 }, desc: "+50% Ministerium · +30% Raumwerft · −20% Labor" },
+  { type: "Toxische Welt",       sym: "◎", col: "#fb923c", modifiers: { mine: 1.9, farm: 0.4 },                   desc: "+90% Minen · −60% Farmen" },
+  { type: "Eiswelt",             sym: "◇", col: "#bfdbfe", modifiers: { solar: 0.5, mine: 1.4, lab: 1.3 },        desc: "−50% Solar · +40% Minen · +30% Labor" },
+  { type: "Gasgigant-Mond",      sym: "◉", col: "#a78bfa", modifiers: { solar: 1.4, shipyard: 1.3, farm: 0.85 },  desc: "+40% Solar · +30% Raumwerft · −15% Farmen" },
+  { type: "Strategischer Orbit", sym: "◈", col: "#60a5fa", modifiers: { barracks: 1.3, shipyard: 1.5 },            desc: "+30% Kaserne · +50% Raumwerft" },
+  { type: "Feuchte Welt",        sym: "◇", col: "#34d399", modifiers: { farm: 1.8, mine: 0.7, solar: 0.9 },       desc: "+80% Farmen · −30% Minen · −10% Solar" },
+];
+
+const PLANET_PREFIXES = ["Proxima","Vega","Lyra","Arcturus","Sirius","Rigel","Aldebaran","Capella","Bellatrix","Deneb","Altair","Spica","Antares","Pollux","Fomalhaut","Hadar","Acrux","Mimosa","Agena","Ankaa","Saiph","Elnath","Canopus","Avior","Acamar","Algol","Mira","Izar","Nashira","Schedar"];
+const PLANET_SUFFIXES = ["II","III","IV","V","VI","Alpha","Beta","Gamma","Delta","Prime","Minor","Major","Ultima","Nova","Eris","Omega"];
+
 let currentTab = 'factions';
 
 const BASE_RATES = {

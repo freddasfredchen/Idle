@@ -277,3 +277,15 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 .ship-raid-bar-fill { height: 100%; background: #4ade80; border-radius: 2px; transition: width 1s linear; }
 .ship-specialist { color: #3a5828; font-size: 9px; padding: 3px 0; border-bottom: 1px solid #0d1525; }
 .ship-specialist:last-child { border-bottom: none; }
+
+/* PLANETS TAB */
+.planet-entry { border: 1px solid #1a2840; border-radius: 3px; padding: 8px 10px; margin-bottom: 6px; }
+.planet-entry.planet-active { border-color: #c8aa4f33; background: #0d1020; }
+.planet-entry-head { display: flex; align-items: flex-start; gap: 8px; }
+.planet-entry-name { color: #c8aa4f; font-family: 'Cinzel', serif; font-size: 10px; }
+.planet-entry-type { color: #354a60; font-size: 9px; margin-top: 2px; }
+.planet-entry-mods { color: #2a5040; font-size: 8px; margin-top: 2px; }
+.planet-view-btn { background: none; border: 1px solid #1e2d45; color: #3a5070; cursor: pointer; font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 3px 8px; white-space: nowrap; }
+.planet-view-btn:hover { color: #c8aa4f; border-color: #c8aa4f; }
+.planet-view-btn.active { color: #c8aa4f; border-color: #c8aa4f33; }
+.planet-colonize-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; gap: 6px; }

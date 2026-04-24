@@ -50,7 +50,7 @@ function renderResources() {
 }
 
 function renderPlanet() {
-  const p = GS.planet;
+  const p = activePlanet();
   document.getElementById('planet-title').innerHTML =
     `<span style="font-family:'Cinzel',serif">${p.name}</span> — ${p.type} <span>${p.buildings.length}/${p.slots} Bauplätze</span><button class="help-btn" onclick="showHelp()">?</button>`;
 
@@ -145,13 +145,7 @@ function renderTab() {
   } else if (currentTab === 'decrees') {
     renderDecrees();
   } else if (currentTab === 'planets') {
-    el.innerHTML = `
-      <div class="panel-title">Planeten</div>
-      <div class="planet-card">
-        <div class="planet-card-name">${GS.planet.name}</div>
-        <div class="planet-card-sub">${GS.planet.type} • ${GS.planet.slots} Bauplätze</div>
-      </div>
-      <p class="empty-hint" style="margin-top:8px;">Weitere Planeten durch Kolonisierung erschließbar.<br><br>Benötigt: Raumwerft + Kolonisierungsschiff + 100 Einfluss.</p>`;
+    renderPlanets();
   }
 }
 

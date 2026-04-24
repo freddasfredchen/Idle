@@ -15,7 +15,7 @@ function canAffordUpgrade(type, level) {
 
 function upgradeBuilding(slot) {
   if (!GS) return;
-  const b = GS.planet.buildings.find(b => b.slot === slot);
+  const b = activePlanet().buildings.find(b => b.slot === slot);
   if (!b) return;
 
   const costs = getUpgradeCost(b.type, b.level);
@@ -96,8 +96,9 @@ function buildBuilding(slot, type) {
     GS.resources[res].v -= amt;
   }
 
-  const newId = Math.max(0, ...GS.planet.buildings.map(b => b.id)) + 1;
-  GS.planet.buildings.push({ id: newId, type, name: m.name, level: 1, slot });
+  const p = activePlanet();
+  const newId = Math.max(0, ...p.buildings.map(b => b.id)) + 1;
+  p.buildings.push({ id: newId, type, name: m.name, level: 1, slot });
 
   recalcRates();
   addLog('ok', `${m.name} auf Bauplatz ${slot + 1} errichtet.`);
