@@ -192,3 +192,22 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 .planet-card { border: 1px solid #1a2840; border-radius: 3px; padding: 8px 10px; margin-bottom: 8px; }
 .planet-card-name { font-family: 'Cinzel', serif; color: #c8aa4f; font-size: 11px; }
 .planet-card-sub { color: #354a60; font-size: 9px; margin-top: 3px; }
+
+/* BUILD MODAL */
+#build-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 100; }
+.build-option { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #0d1525; }
+.build-option:last-child { border-bottom: none; }
+.build-option-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.build-option-name { color: #c8aa4f; font-family: 'Cinzel', serif; font-size: 10px; }
+.build-option-prod { color: #354a60; font-size: 8px; margin-top: 2px; }
+.build-option-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.build-option-cost { color: #2a4060; font-size: 8px; text-align: right; }
+.build-option.build-locked .build-option-name { color: #2e3e50; }
+.build-option.build-locked .build-option-prod { color: #1e2d3a; }
+.build-btn {
+  background: none; border: 1px solid #1e3828; color: #3a6a48; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 3px 10px;
+  letter-spacing: 1px; transition: color 0.2s, border-color 0.2s;
+}
+.build-btn:hover:not([disabled]) { color: #4ade80; border-color: #4ade80; }
+.build-btn[disabled] { color: #1e2d3a; border-color: #141e2a; cursor: default; }

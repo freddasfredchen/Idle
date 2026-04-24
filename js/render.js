@@ -77,7 +77,7 @@ function renderPlanet() {
         <div class="bslot-cost">↑ ${costStr}</div>
       </div>`;
     }
-    return `<div class="bslot" title="Leerer Bauplatz">
+    return `<div class="bslot" onclick="selectBuild(${i})" title="Leerer Bauplatz — klicken zum Bauen">
       <div class="bslot-empty">+</div>
     </div>`;
   }).join('');
