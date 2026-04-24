@@ -9,29 +9,37 @@ function createInitialState() {
       generation: 1,
     },
     resources: {
-      energy:    { v: 150,  cap: 1000, rate: 3.5,   decay: 0,       label: "Energie",    sym: "⚡", col: "#fbbf24" },
-      minerals:  { v: 80,   cap: 500,  rate: 1.2,   decay: 0,       label: "Mineralien", sym: "⬡", col: "#94a3b8" },
-      food:      { v: 200,  cap: 800,  rate: 2.1,   decay: 0,       label: "Nahrung",    sym: "◇", col: "#86efac" },
-      credits:   { v: 500,  cap: 9999, rate: 0.8,   decay: 0,       label: "Credits",    sym: "₡", col: "#c8aa4f" },
-      research:  { v: 20,   cap: 300,  rate: 0.3,   decay: 0,       label: "Forschung",  sym: "⬢", col: "#7dd3fc" },
-      influence: { v: 45,   cap: 200,  rate: 0.15,  decay: -0.03,   label: "Einfluss",   sym: "◈", col: "#e879f9" },
-      loyalty:   { v: 72,   cap: 100,  rate: 0,     decay: -0.005,  label: "Loyalität",  sym: "♥", col: "#f87171" },
+      energy:    { v: 0, cap: 999, rate: 0, decay: 0, consumption: 0, label: "Energie", sym: "⚡", col: "#fbbf24" },
+      minerals:  { v: 80,   cap: 500,  rate: 0, decay: 0,       label: "Mineralien", sym: "⬡", col: "#94a3b8" },
+      food:      { v: 200,  cap: 800,  rate: 0, decay: 0,       label: "Nahrung",    sym: "◇", col: "#86efac" },
+      credits:   { v: 500,  cap: 9999, rate: 0, decay: 0,       label: "Credits",    sym: "₡", col: "#c8aa4f" },
+      research:  { v: 20,   cap: 300,  rate: 0, decay: 0,       label: "Forschung",  sym: "⬢", col: "#7dd3fc" },
+      influence: { v: 45,   cap: 200,  rate: 0, decay: -0.03,   label: "Einfluss",   sym: "◈", col: "#e879f9" },
+      loyalty:   { v: 72,   cap: 100,  rate: 0, decay: -0.005,  label: "Loyalität",  sym: "♥", col: "#f87171" },
     },
-    planet: {
-      name: "Kepler Prime", type: "Startkolonie", slots: 12,
-      buildings: [
-        { id: 1, type: "solar",    name: "Solaranlage Mk.II",       level: 2, slot: 0 },
-        { id: 2, type: "mine",     name: "Asteroidenmine",           level: 1, slot: 1 },
-        { id: 3, type: "farm",     name: "Hydroponie-Komplex",       level: 1, slot: 2 },
-        { id: 4, type: "ministry", name: "Min. f. Wahrh. u. Verw.", level: 1, slot: 3 },
-      ],
-    },
-    factions: [
-      { id: "corp",    name: "Patriot. Unternehmerfront",  sat: 62, inf: 28, col: "#fbbf24" },
-      { id: "science", name: "Aufgekl. Expansionisten",    sat: 48, inf: 24, col: "#60a5fa" },
-      { id: "workers", name: "Arbeiterkollektiv Ω-7",      sat: 31, inf: 22, col: "#f87171" },
-      { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, inf: 26, col: "#a78bfa" },
+    planets: [
+      {
+        id: 0, name: "Kepler Prime", type: "Startkolonie",
+        sym: "◉", col: "#fbbf24", slots: 12, modifiers: {},
+        buildings: [
+          { id: 1, type: "solar",    name: "Solaranlage Mk.II",       level: 2, slot: 0 },
+          { id: 2, type: "mine",     name: "Asteroidenmine",           level: 1, slot: 1 },
+          { id: 3, type: "farm",     name: "Hydroponie-Komplex",       level: 1, slot: 2 },
+          { id: 4, type: "ministry", name: "Min. f. Wahrh. u. Verw.", level: 1, slot: 3 },
+        ],
+      },
     ],
+    activePlanetId: 0,
+    availablePlanets: [],
+    factions: [
+      { id: "corp",    name: "Patriot. Unternehmerfront",  sat: 62, pow: 35, inf: 28, col: "#fbbf24", lastRebTick: -999, lastCorrTick: -999 },
+      { id: "science", name: "Aufgekl. Expansionisten",    sat: 48, pow: 20, inf: 24, col: "#60a5fa", lastRebTick: -999, lastCorrTick: -999 },
+      { id: "workers", name: "Arbeiterkollektiv Ω-7",      sat: 31, pow: 45, inf: 22, col: "#f87171", lastRebTick: -999, lastCorrTick: -999 },
+      { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, pow: 25, inf: 26, col: "#a78bfa", lastRebTick: -999, lastCorrTick: -999 },
+    ],
+    research: [],
+    decrees: [],
+    fleet: { colony: 0, trade: 0, warship: 0, raidActive: false, raidEndTick: 0, specialists: [] },
     log: [
       { id: 1, sev: "ok",   msg: "Kepler Prime kolonisiert. Protokoll 7-B initiiert." },
       { id: 2, sev: "warn", msg: "Arbeiterkollektiv Ω-7: 'spontane Erholungsaktivitäten' in Sektor 3 gemeldet." },
@@ -49,6 +57,7 @@ function applyOffline(state) {
   const decayElapsed = Math.min(elapsed, MAX_OFFLINE_DECAY_S);
   const newRes = {};
   for (const [k, r] of Object.entries(state.resources)) {
+    if (k === 'energy') { newRes[k] = { ...r }; continue; }
     let v = r.v + r.rate * elapsed + r.decay * decayElapsed;
     if (k === 'loyalty') v = Math.max(LOYALTY_FLOOR, v);
     v = Math.max(0, Math.min(r.cap, v));
@@ -64,6 +73,128 @@ function applyOffline(state) {
   return { ...state, resources: newRes, log: newLog, meta: { ...state.meta, lastSaved: now } };
 }
 
+function recalcRates() {
+  // Reset rates and caps
+  for (const [k, r] of Object.entries(GS.resources)) {
+    if (k !== 'energy') r.rate = BASE_RATES[k] || 0;
+    if (BASE_CAPS[k] !== undefined) r.cap = BASE_CAPS[k];
+  }
+
+  // ── Research effects ──────────────────────────────────────────
+  const buildProdMult = {};
+  let researchDrainMult = 1;
+  let loyaltyDecayMult = 1;
+
+  for (const id of (GS.research || [])) {
+    const r = RESEARCH[id];
+    if (!r) continue;
+    const e = r.effect;
+    if (e.type === 'prod_mult') {
+      buildProdMult[e.building] = (buildProdMult[e.building] || 1) * e.multiplier;
+    } else if (e.type === 'prod_mult_multi') {
+      for (const bt of e.buildings) buildProdMult[bt] = (buildProdMult[bt] || 1) * e.multiplier;
+    } else if (e.type === 'drain_mult') {
+      researchDrainMult *= e.multiplier;
+    } else if (e.type === 'cap_increase') {
+      for (const res of e.resources) { if (GS.resources[res]) GS.resources[res].cap += e.amount; }
+    } else if (e.type === 'cap_increase_all') {
+      for (const k of Object.keys(GS.resources)) { if (k !== 'energy') GS.resources[k].cap += e.amount; }
+    } else if (e.type === 'loyalty_decay_mult') {
+      loyaltyDecayMult *= e.multiplier;
+    }
+  }
+
+  // ── Decree rate effects ───────────────────────────────────────
+  let decreeProdAllMult = 1;
+  const decreeBuildMult = {};
+  const decreeFlatRate = {};
+  let decreeLoyaltyNoDecay = false;
+
+  for (const id of (GS.decrees || [])) {
+    const d = DECREES[id];
+    if (!d?.rateEffects) continue;
+    const e = d.rateEffects;
+    if (e.prod_all_mult) decreeProdAllMult *= e.prod_all_mult;
+    if (e.building_mult) {
+      for (const [bt, mult] of Object.entries(e.building_mult)) {
+        decreeBuildMult[bt] = (decreeBuildMult[bt] || 1) * mult;
+      }
+    }
+    if (e.resource_flat) {
+      for (const [res, delta] of Object.entries(e.resource_flat)) {
+        decreeFlatRate[res] = (decreeFlatRate[res] || 0) + delta;
+      }
+    }
+    if (e.loyalty_no_decay) decreeLoyaltyNoDecay = true;
+  }
+
+  if (decreeLoyaltyNoDecay) {
+    GS.resources.loyalty.decay = 0;
+  } else {
+    GS.resources.loyalty.decay = -0.005 * loyaltyDecayMult;
+  }
+
+  // ── Energy + production across ALL planets ────────────────────
+  let energyProd = 0, energyDrain = 0;
+
+  for (const planet of GS.planets) {
+    const pm = planet.modifiers || {};
+    for (const b of planet.buildings) {
+      const meta = BLDG[b.type];
+      if (!meta) continue;
+      const planetMult = pm[b.type] || 1;
+      if (!meta.resource) {
+        const mult = (buildProdMult[b.type] || 1) * (decreeBuildMult[b.type] || 1) * decreeProdAllMult * planetMult;
+        energyProd += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * mult;
+      } else if (meta.drain) {
+        energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * researchDrainMult;
+      }
+    }
+  }
+  GS.resources.energy.v = energyProd;
+  GS.resources.energy.consumption = energyDrain;
+  GS.resources.energy.rate = 0;
+
+  const efficiency = energyDrain > 0 ? Math.min(1, energyProd / energyDrain) : 1;
+
+  for (const planet of GS.planets) {
+    const pm = planet.modifiers || {};
+    for (const b of planet.buildings) {
+      const meta = BLDG[b.type];
+      if (!meta?.resource) continue;
+      const res = GS.resources[meta.resource];
+      if (!res) continue;
+      const researchMult = buildProdMult[b.type] || 1;
+      const decreeMult   = (decreeBuildMult[b.type] || 1) * decreeProdAllMult;
+      const planetMult   = pm[b.type] || 1;
+      res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * researchMult * decreeMult * planetMult;
+    }
+  }
+
+  // Flat rate bonuses — decrees + research
+  for (const [res, delta] of Object.entries(decreeFlatRate)) {
+    if (GS.resources[res]) GS.resources[res].rate += delta;
+  }
+  for (const id of (GS.research || [])) {
+    const e = RESEARCH[id]?.effect;
+    if (e?.type === 'resource_flat_rate' && GS.resources[e.resource]) GS.resources[e.resource].rate += e.delta;
+  }
+
+  // Trade ships + specialists
+  if (GS.fleet) {
+    GS.resources.credits.rate += (GS.fleet.trade || 0) * 0.2;
+    for (const s of (GS.fleet.specialists || [])) {
+      if (GS.resources[s.resource]) GS.resources[s.resource].rate += s.bonus;
+    }
+  }
+
+  // Corruption drain
+  for (const f of (GS.factions || [])) {
+    const pow = f.pow || 0;
+    if (pow > 80) GS.resources.credits.rate -= (pow - 80) * 0.003;
+  }
+}
+
 function loadState() {
   try {
     const saved = localStorage.getItem(SAVE_KEY);
@@ -71,5 +202,30 @@ function loadState() {
   } catch {
     GS = createInitialState();
   }
+
+  // Migrations for old saves
+  if (GS.planet && !GS.planets) {
+    GS.planets = [{ id: 0, sym: '◉', col: '#fbbf24', modifiers: {}, ...GS.planet }];
+    GS.activePlanetId = 0;
+    delete GS.planet;
+  }
+  if (!GS.activePlanetId) GS.activePlanetId = 0;
+  if (!GS.research)  GS.research  = [];
+  if (!GS.decrees)   GS.decrees   = [];
+  if (!GS.fleet)     GS.fleet     = { colony: 0, trade: 0, warship: 0, raidActive: false, raidEndTick: 0, specialists: [] };
+  if (!GS.fleet.specialists) GS.fleet.specialists = [];
+
+  for (const f of GS.factions) {
+    if (f.pow          === undefined) f.pow          = 30;
+    if (f.lastRebTick  === undefined) f.lastRebTick  = -999;
+    if (f.lastCorrTick === undefined) f.lastCorrTick = -999;
+  }
+
+  // Generate available planets if missing (depends on planets.js)
+  if (!GS.availablePlanets || GS.availablePlanets.length < 5) {
+    GS.availablePlanets = generateAvailablePlanets(5);
+  }
+
+  recalcRates();
   renderAll();
 }
