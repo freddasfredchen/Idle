@@ -20,12 +20,12 @@ function generatePlanet(seed, excludeTypes = []) {
 function generateAvailablePlanets(count = 5) {
   const planets = [];
   const usedTypes = [];
-  let seed = Date.now();
+  let seed = (Math.random() * 2147483647) | 0;
   while (planets.length < count) {
     const p = generatePlanet(seed, usedTypes);
     usedTypes.push(p.type);
     planets.push(p);
-    seed += 97331;
+    seed = (seed * 1664525 + 1013904223) & 0x7fffffff;
   }
   return planets;
 }
