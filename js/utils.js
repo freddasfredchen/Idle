@@ -16,6 +16,13 @@ function satColor(v) {
   return '#f87171';
 }
 
+function powColor(v) {
+  if (v >= 85) return '#f87171';
+  if (v >= 70) return '#fb923c';
+  if (v >= 50) return '#fbbf24';
+  return '#4ade80';
+}
+
 function toRoman(n) {
   const r = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
   return r[n-1] || n;
