@@ -51,6 +51,17 @@
   </div>
 </div>
 
+<!-- HELP MODAL -->
+<div id="help-modal" onclick="if(event.target===this)closeHelp()">
+  <div class="help-content">
+    <div class="help-header">
+      <div class="panel-title" style="border:none;margin:0;padding:0;">Verfügbare Gebäude</div>
+      <button class="help-close-btn" onclick="closeHelp()">×</button>
+    </div>
+    <div id="help-modal-body" class="help-list"></div>
+  </div>
+</div>
+
 <!-- LOG -->
 <div id="log-panel">
   <div class="log-title">REICHSCHRONIK</div>
@@ -63,6 +74,7 @@
 <script src="js/save.js"></script>
 <script src="js/buildings.js"></script>
 <script src="js/render.js"></script>
+<script src="js/help.js"></script>
 <script src="js/tick.js"></script>
 <script>loadState();</script>
 </body>
