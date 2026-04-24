@@ -99,24 +99,6 @@ const RESEARCH = {
     cost: { research: 15 }, requires: [],
     effect: { type: 'prod_mult', building: 'solar', multiplier: 1.2 },
   },
-  energy_tech: {
-    name: "Kernreaktor-Zertifizierungsprogramm", sym: "⊕", tier: 1,
-    desc: "Fusionsreaktoren +30% Energie. 14 Formulare und ein Sicherheitsaudit waren erforderlich.",
-    cost: { research: 25, credits: 50 }, requires: [], requiresBuilding: 'fusion',
-    effect: { type: 'prod_mult', building: 'fusion', multiplier: 1.3 },
-  },
-  weapons_tech: {
-    name: "Kasernierungsoptimierung", sym: "▲", tier: 1,
-    desc: "Kasernen steigern Loyalitätsproduktion um 40%. Die Methodik bleibt klassifiziert.",
-    cost: { research: 20, minerals: 40 }, requires: [], requiresBuilding: 'barracks',
-    effect: { type: 'prod_mult', building: 'barracks', multiplier: 1.4 },
-  },
-  crystal_opt: {
-    name: "Kristallographische Verfeinerung", sym: "◇", tier: 1,
-    desc: "Extraktionskammern fördern 25% mehr Wissenskristalle. Die Kristalle sprechen jetzt lauter.",
-    cost: { research: 20, minerals: 30 }, requires: [], requiresBuilding: 'crystal',
-    effect: { type: 'prod_mult', building: 'crystal', multiplier: 1.25 },
-  },
   // ── Stufe 2 ──────────────────────────────────────────────────
   superconductor: {
     name: "Supraleitung", sym: "⚡", tier: 2,
@@ -136,35 +118,11 @@ const RESEARCH = {
     cost: { research: 45, minerals: 100 }, requires: ['hydro2'],
     effect: { type: 'cap_increase', resources: ['minerals', 'food'], amount: 500 },
   },
-  ion_tech: {
-    name: "Ionenfeldoptimierung", sym: "⚡", tier: 2,
-    desc: "Ionenfelder reduzieren Energieverbrauch aller Gebäude um weitere 15%. Nebenwirkungen: leichtes Kribbeln.",
-    cost: { research: 50, credits: 80 }, requires: ['superconductor'], requiresBuilding: 'crystal',
-    effect: { type: 'drain_mult', multiplier: 0.85 },
-  },
-  plasma_tech: {
-    name: "Plasmatische Substanzextraktion", sym: "◎", tier: 2,
-    desc: "Minen und Nanitenfabriken fördern 40% mehr. Plasma brennt Ineffizienz weg — und gelegentlich auch die Infrastruktur.",
-    cost: { research: 70, minerals: 100, credits: 100 }, requires: ['ion_tech', 'mining_tech'], requiresBuilding: 'crystal',
-    effect: { type: 'prod_mult_multi', buildings: ['mine', 'nanite'], multiplier: 1.4 },
-  },
-  espionage_tech: {
-    name: "Abt. f. Freundliche Informationsbeschaffung", sym: "◈", tier: 2,
-    desc: "+0.25/s Einfluss dauerhaft. Spionage ist nur ein freundlicheres Wort für 'aufmerksames Zuhören'.",
-    cost: { research: 45, influence: 20 }, requires: ['fiscal'], requiresBuilding: 'shipyard',
-    effect: { type: 'resource_flat_rate', resource: 'influence', delta: 0.25 },
-  },
   propaganda: {
     name: "Propaganda-Netz", sym: "◎", tier: 2,
     desc: "Staatspropaganda stabilisiert Corp und Orden (+0.02/s), destabilisiert das Arbeiterkollektiv (−0.05/s Zufriedenheit).",
     cost: { research: 40, credits: 60 }, requires: ['fiscal'],
     effect: { type: 'faction_sat_rate', rates: { corp: 0.02, order: 0.02, workers: -0.05 } },
-  },
-  hyperspace_drive: {
-    name: "Hyperraumfaltungsforschung", sym: "◉", tier: 2,
-    desc: "Raumwerft und Deuteriumdestillerie +35% effizienter. Der Raum wurde gefaltet. Die Gewerkschaft protestiert.",
-    cost: { research: 60, credits: 100, influence: 15 }, requires: ['espionage_tech', 'quantum'], requiresBuilding: 'shipyard',
-    effect: { type: 'prod_mult_multi', buildings: ['shipyard', 'deuterium'], multiplier: 1.35 },
   },
   // ── Stufe 3 ──────────────────────────────────────────────────
   loyalty_matrix: {
@@ -184,12 +142,6 @@ const RESEARCH = {
     desc: "Permanente Schwächung der größten Oppositionsfraktionen: Corp −10 Einfluss, Arbeiter −8 Einfluss. Nicht umkehrbar.",
     cost: { research: 90, influence: 50, credits: 150 }, requires: ['propaganda', 'quantum'],
     effect: { type: 'faction_inf_delta', deltas: { corp: -10, workers: -8 } },
-  },
-  graviton_tech: {
-    name: "Gravitonverdichtungskommission", sym: "✦", tier: 3,
-    desc: "Alle Produktionsgebäude +20%. Die Physik hat ihre Einwände nach einem Gespräch zurückgezogen.",
-    cost: { research: 150, credits: 400, influence: 50 }, requires: ['plasma_tech', 'hyperspace_drive', 'loyalty_matrix'], requiresBuilding: 'fusion',
-    effect: { type: 'prod_mult_multi', buildings: ['mine','farm','ministry','lab','barracks','shipyard','fusion','crystal','deuterium','nanite','robotics'], multiplier: 1.2 },
   },
 };
 

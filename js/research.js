@@ -5,20 +5,7 @@ function hasLab() {
 function canUnlockResearch(id) {
   const r = RESEARCH[id];
   if (!r) return false;
-  if (!r.requires.every(req => (GS.research || []).includes(req))) return false;
-  if (r.requiresBuilding) {
-    const needed = Array.isArray(r.requiresBuilding) ? r.requiresBuilding : [r.requiresBuilding];
-    if (!needed.every(bt => GS.planets.some(p => p.buildings.some(b => b.type === bt)))) return false;
-  }
-  return true;
-}
-
-function missingBuildingReq(id) {
-  const r = RESEARCH[id];
-  if (!r?.requiresBuilding) return null;
-  const needed = Array.isArray(r.requiresBuilding) ? r.requiresBuilding : [r.requiresBuilding];
-  const missing = needed.filter(bt => !GS.planets.some(p => p.buildings.some(b => b.type === bt)));
-  return missing.length > 0 ? missing.map(bt => BLDG[bt]?.name ?? bt).join(', ') : null;
+  return r.requires.every(req => (GS.research || []).includes(req));
 }
 
 function doResearch(id) {
@@ -75,12 +62,10 @@ function renderResearch() {
     html += `<div class="research-tier-label">— Stufe ${tier} —</div>`;
     for (const [id, r] of items) {
       const isDone       = done.includes(id);
-      const missingBldg  = !isDone ? missingBuildingReq(id) : null;
-      const isUnlocked   = !isDone && canUnlockResearch(id);
-      const isAffordable = isUnlocked && canAfford(r.cost);
-      const reqStr  = r.requires.map(req => RESEARCH[req]?.name ?? req).join(', ');
-      const fxStr   = factionEffectDesc(r.effect);
-      const lockBtn = missingBldg ? '— kein Gebäude' : '— gesperrt';
+      const isUnlocked   = canUnlockResearch(id);
+      const isAffordable = canAfford(r.cost);
+      const reqStr = r.requires.map(req => RESEARCH[req]?.name ?? req).join(', ');
+      const fxStr  = factionEffectDesc(r.effect);
       html += `<div class="research-item${isDone ? ' done' : !isUnlocked ? ' locked' : ''}">
         <div class="research-head">
           <span style="font-size:14px;line-height:1">${r.sym}</span>
@@ -88,13 +73,12 @@ function renderResearch() {
         </div>
         <div class="research-desc">${r.desc}</div>
         ${fxStr && !isDone ? `<div class="research-faction-fx">Fraktionen: ${fxStr}</div>` : ''}
-        ${missingBldg && !isDone ? `<div class="research-req" style="color:#8a3535">Gebäude benötigt: ${missingBldg}</div>` : ''}
         ${reqStr && !isDone ? `<div class="research-req">Benötigt: ${reqStr}</div>` : ''}
         <div class="research-meta">
           <span class="research-cost">${isDone ? '' : formatCost(r.cost)}</span>
           ${isDone
             ? '<span class="research-done-label">✓ Abgeschlossen</span>'
-            : `<button class="research-btn" ${isUnlocked && isAffordable ? `onclick="doResearch('${id}')"` : 'disabled'}>${isUnlocked ? (isAffordable ? 'Forschen' : '— fehlt') : lockBtn}</button>`
+            : `<button class="research-btn" ${isUnlocked && isAffordable ? `onclick="doResearch('${id}')"` : 'disabled'}>${isUnlocked ? (isAffordable ? 'Forschen' : '— fehlt') : '— gesperrt'}</button>`
           }
         </div>
       </div>`;
