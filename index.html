@@ -51,6 +51,17 @@
   </div>
 </div>
 
+<!-- BUILD MODAL -->
+<div id="build-modal" onclick="if(event.target===this)closeBuildModal()">
+  <div class="help-content">
+    <div class="help-header">
+      <div class="panel-title" style="border:none;margin:0;padding:0;">Gebäude errichten</div>
+      <button class="help-close-btn" onclick="closeBuildModal()">×</button>
+    </div>
+    <div id="build-modal-body" class="help-list"></div>
+  </div>
+</div>
+
 <!-- HELP MODAL -->
 <div id="help-modal" onclick="if(event.target===this)closeHelp()">
   <div class="help-content">
