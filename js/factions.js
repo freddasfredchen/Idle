@@ -10,8 +10,8 @@ function appeaseFaction(factionId) {
   GS.resources.influence.v -= 20;
   GS.resources.credits.v   -= 50;
   f.sat = Math.min(100, f.sat + 20);
-  f.pow = Math.max(0,   f.pow - 10);
-  addLog('ok', `${f.name} beschwichtigt: Zufriedenheit +20, Macht −10.`);
+  f.pow = Math.min(100, f.pow + 10);
+  addLog('ok', `${f.name} beschwichtigt: Zufriedenheit +20, Macht +10.`);
   renderAll();
 }
 

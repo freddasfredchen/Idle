@@ -123,7 +123,7 @@ function renderTab() {
           <div class="faction-footer">
             <span class="faction-inf">Einfluss: ${f.inf}%</span>
             <div class="faction-actions">
-              <button class="faction-action-btn" ${canAppease ? `onclick="appeaseFaction('${f.id}')"` : 'disabled'} title="Beschwichtigen (◈20 ₡50): Zuf.+20, Macht−10">Besch.</button>
+              <button class="faction-action-btn" ${canAppease ? `onclick="appeaseFaction('${f.id}')"` : 'disabled'} title="Beschwichtigen (◈20 ₡50): Zuf.+20, Macht+10">Besch.</button>
               <button class="faction-action-btn intimidate" ${canIntimidate ? `onclick="intimidateFaction('${f.id}')"` : 'disabled'} title="Einschüchtern (◈30 ♥20): Macht−20, Zuf.−10">Einsch.</button>
             </div>
           </div>
