@@ -55,9 +55,15 @@ function tickState() {
     }
   }
 
+  // Raid completion
+  if (GS.fleet?.raidActive && GS.meta.gameTick >= GS.fleet.raidEndTick) {
+    completeRaid();
+  }
+
   GS.meta.gameTick++;
   renderResources();
   renderTick();
+  if (currentTab === 'ships' && GS.fleet?.raidActive) renderTab();
   if (GS.meta.gameTick % 30 === 0) autoSave();
 }
 

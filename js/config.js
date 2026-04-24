@@ -2,7 +2,9 @@ const SAVE_KEY = 'gds_v2';
 const TICK_MS = 1000;
 const MAX_OFFLINE_DECAY_S = 21600;
 const LOYALTY_FLOOR = 15;
-const FACTION_POW_BASE_RATE = 0.001; // kW/s Machtzuwachs (100 in ~16min ohne Gegenmaßnahmen)
+const FACTION_POW_BASE_RATE = 0.001;
+const RAID_DURATION_TICKS = 60;
+const RAID_COST = { credits: 30, influence: 10 };
 
 let currentTab = 'factions';
 
@@ -192,3 +194,35 @@ const DECREES = {
     factionPowRate: { order: -0.003, science: 0.002 },
   },
 };
+
+const SHIPS = {
+  colony: {
+    name: "Kolonisierungsschiff", sym: "◉",
+    desc: "Ermöglicht die Besiedlung neuer Planeten. Erfordert ein Kriegsschiff zur Sicherung.",
+    cost: { minerals: 200, credits: 400 },
+    rateBonus: {},
+  },
+  trade: {
+    name: "Handelsschiff", sym: "₡",
+    desc: "Unterhält Handelsrouten zwischen Systemen. Jedes Schiff generiert passiv Credits.",
+    cost: { minerals: 100, credits: 200 },
+    rateBonus: { credits: 0.2 },
+  },
+  warship: {
+    name: "Kriegsschiff", sym: "▲",
+    desc: "Für Pirateriefahrten und Planetenbefriedung. Benötigt für Kolonisierungssicherung.",
+    cost: { minerals: 150, credits: 300, influence: 20 },
+    rateBonus: {},
+  },
+};
+
+// res: immediate resource reward; specialist: permanent rate bonus (resource chosen randomly)
+const RAID_REWARDS = [
+  { label: "Mineralienladung erbeutet",           res: { minerals: 60 } },
+  { label: "Kreditreserven geplündert",            res: { credits: 100 } },
+  { label: "Nahrungsvorräte gesichert",            res: { food: 50 } },
+  { label: "Forschungsunterlagen gestohlen",       res: { research: 30 } },
+  { label: "Geheimdienstdaten gewonnen",           res: { influence: 25 } },
+  { label: "Frachter gekapert — gemischte Ladung", res: { minerals: 30, credits: 50 } },
+  { label: "Spezialist rekrutiert",                specialist: { bonus: 0.1 } },
+];

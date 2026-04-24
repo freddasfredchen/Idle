@@ -260,3 +260,20 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
   letter-spacing: 1px; transition: color 0.2s, border-color 0.2s; white-space: nowrap;
 }
 .decree-repeal-btn:hover { color: #f87171; border-color: #f87171; }
+
+/* SHIPS */
+.ship-item { border: 1px solid #1a2840; border-radius: 3px; padding: 8px 10px; margin-bottom: 6px; }
+.ship-head { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.ship-name { color: #c8aa4f; font-family: 'Cinzel', serif; font-size: 10px; }
+.ship-desc { color: #354a60; font-size: 9px; line-height: 1.5; margin-top: 2px; }
+.ship-bonus { color: #2a4828; font-size: 8px; margin-top: 3px; }
+.ship-meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ship-count { color: #253545; font-size: 8px; }
+.ship-count strong { color: #c8aa4f; }
+.ship-cost { color: #2a4060; font-size: 8px; }
+.ship-raid-active { border: 1px solid #1e3828; border-radius: 3px; padding: 8px 10px; background: #050f08; margin-bottom: 6px; }
+.ship-raid-label { color: #4ade80; font-size: 9px; margin-bottom: 5px; }
+.ship-raid-bar-bg { height: 3px; background: #131c28; border-radius: 2px; overflow: hidden; }
+.ship-raid-bar-fill { height: 100%; background: #4ade80; border-radius: 2px; transition: width 1s linear; }
+.ship-specialist { color: #3a5828; font-size: 9px; padding: 3px 0; border-bottom: 1px solid #0d1525; }
+.ship-specialist:last-child { border-bottom: none; }

@@ -34,6 +34,7 @@ function createInitialState() {
     ],
     research: [],
     decrees: [],
+    fleet: { colony: 0, trade: 0, warship: 0, raidActive: false, raidEndTick: 0, specialists: [] },
     log: [
       { id: 1, sev: "ok",   msg: "Kepler Prime kolonisiert. Protokoll 7-B initiiert." },
       { id: 2, sev: "warn", msg: "Arbeiterkollektiv Ω-7: 'spontane Erholungsaktivitäten' in Sektor 3 gemeldet." },
@@ -168,6 +169,14 @@ function recalcRates() {
     if (GS.resources[res]) GS.resources[res].rate += delta;
   }
 
+  // Trade ship passive income + specialist bonuses
+  if (GS.fleet) {
+    GS.resources.credits.rate += (GS.fleet.trade || 0) * 0.2;
+    for (const s of (GS.fleet.specialists || [])) {
+      if (GS.resources[s.resource]) GS.resources[s.resource].rate += s.bonus;
+    }
+  }
+
   // Passive corruption drain when faction power > 80
   for (const f of (GS.factions || [])) {
     const pow = f.pow || 0;
@@ -184,6 +193,8 @@ function loadState() {
   }
   if (!GS.research) GS.research = [];
   if (!GS.decrees)  GS.decrees  = [];
+  if (!GS.fleet)    GS.fleet    = { colony: 0, trade: 0, warship: 0, raidActive: false, raidEndTick: 0, specialists: [] };
+  if (!GS.fleet.specialists) GS.fleet.specialists = [];
   for (const f of GS.factions) {
     if (f.pow           === undefined) f.pow           = 30;
     if (f.lastRebTick   === undefined) f.lastRebTick   = -999;
