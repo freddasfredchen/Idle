@@ -46,10 +46,16 @@ function renderPlanet() {
     const b = slotMap[i];
     if (b) {
       const m = BLDG[b.type] || {sym:'?', col:'#fff'};
-      return `<div class="bslot occupied" title="${b.name} (Stufe ${b.level})">
+      const costs = getUpgradeCost(b.type, b.level);
+      const affordable = canAffordUpgrade(b.type, b.level);
+      const costStr = Object.entries(costs)
+        .map(([res, amt]) => `${GS.resources[res]?.sym ?? res}${fmt(amt)}`)
+        .join(' ');
+      return `<div class="bslot occupied${affordable ? ' can-afford' : ''}" onclick="upgradeBuilding(${i})" title="Ausbau: ${costStr}">
         <div class="bslot-level">Lv${b.level}</div>
         <div class="bslot-sym" style="color:${m.col}">${m.sym}</div>
         <div class="bslot-name">${b.name}</div>
+        <div class="bslot-cost">↑ ${costStr}</div>
       </div>`;
     }
     return `<div class="bslot" title="Leerer Bauplatz">
