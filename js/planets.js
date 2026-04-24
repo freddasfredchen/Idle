@@ -5,7 +5,8 @@ function activePlanet() {
 function generatePlanet(seed, excludeTypes = []) {
   const rng = (() => { let s = Math.abs(seed % 2147483647) || 1; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
   const pool = PLANET_TYPES.filter(t => !excludeTypes.includes(t.type));
-  const t    = (pool.length > 0 ? pool : PLANET_TYPES)[Math.floor(rng() * (pool.length > 0 ? pool : PLANET_TYPES).length)];
+  const src  = pool.length > 0 ? pool : PLANET_TYPES;
+  const t    = src[Math.floor(rng() * src.length)];
   const name = PLANET_PREFIXES[Math.floor(rng() * PLANET_PREFIXES.length)]
              + ' ' + PLANET_SUFFIXES[Math.floor(rng() * PLANET_SUFFIXES.length)];
   const slots = 6 + Math.floor(rng() * 7); // 6–12
@@ -45,19 +46,14 @@ function colonizePlanet(planetId) {
     renderLog(); return;
   }
 
-  const canAfford = Object.entries(avail.colonizeCost)
-    .every(([res, amt]) => (GS.resources[res]?.v ?? 0) >= amt);
-  if (!canAfford) {
-    const miss = Object.entries(avail.colonizeCost)
-      .filter(([res, amt]) => (GS.resources[res]?.v ?? 0) < amt)
-      .map(([res]) => GS.resources[res]?.label ?? res).join(', ');
-    addLog('warn', `Kolonisierung fehlgeschlagen — zu wenig: ${miss}.`);
+  if (!canAfford(avail.colonizeCost)) {
+    addLog('warn', `Kolonisierung fehlgeschlagen — zu wenig: ${getMissingLabels(avail.colonizeCost)}.`);
     renderLog(); return;
   }
 
   GS.fleet.colony--;
   GS.fleet.warship--;
-  for (const [res, amt] of Object.entries(avail.colonizeCost)) GS.resources[res].v -= amt;
+  deductResources(avail.colonizeCost);
 
   const newPlanet = { ...avail, buildings: [] };
   GS.planets.push(newPlanet);

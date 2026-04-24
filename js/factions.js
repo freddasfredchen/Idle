@@ -2,13 +2,11 @@ function appeaseFaction(factionId) {
   if (!GS) return;
   const f = GS.factions.find(f => f.id === factionId);
   if (!f) return;
-  if (GS.resources.influence.v < 20 || GS.resources.credits.v < 50) {
-    addLog('warn', `Beschwichtigung fehlgeschlagen — zu wenig ◈ oder ₡.`);
-    renderLog();
-    return;
+  if (!canAfford(APPEASE_COST)) {
+    addLog('warn', `Beschwichtigung fehlgeschlagen — zu wenig: ${getMissingLabels(APPEASE_COST)}.`);
+    renderLog(); return;
   }
-  GS.resources.influence.v -= 20;
-  GS.resources.credits.v   -= 50;
+  deductResources(APPEASE_COST);
   f.sat = Math.min(100, f.sat + 20);
   f.pow = Math.min(100, f.pow + 10);
   addLog('ok', `${f.name} beschwichtigt: Zufriedenheit +20, Macht +10.`);
@@ -19,13 +17,11 @@ function intimidateFaction(factionId) {
   if (!GS) return;
   const f = GS.factions.find(f => f.id === factionId);
   if (!f) return;
-  if (GS.resources.influence.v < 30 || GS.resources.loyalty.v < 20) {
-    addLog('warn', `Einschüchterung fehlgeschlagen — zu wenig ◈ oder ♥.`);
-    renderLog();
-    return;
+  if (!canAfford(INTIMIDATE_COST)) {
+    addLog('warn', `Einschüchterung fehlgeschlagen — zu wenig: ${getMissingLabels(INTIMIDATE_COST)}.`);
+    renderLog(); return;
   }
-  GS.resources.influence.v -= 30;
-  GS.resources.loyalty.v   -= 20;
+  deductResources(INTIMIDATE_COST);
   f.pow = Math.max(0,   f.pow - 20);
   f.sat = Math.max(0,   f.sat - 10);
   addLog('info', `${f.name} eingeschüchtert: Macht −20, Zufriedenheit −10.`);
@@ -38,9 +34,8 @@ function triggerRebellion(f) {
   const infLoss  = Math.max(10, Math.round(GS.resources.influence.v * 0.20));
   GS.resources.credits.v   = Math.max(0, GS.resources.credits.v   - credLoss);
   GS.resources.influence.v = Math.max(0, GS.resources.influence.v - infLoss);
-  f.sat = 20;
-  f.pow = Math.min(100, f.pow + 15);
-  addLog('warn', `AUFSTAND! ${f.name} außer Kontrolle. Verluste: ₡${credLoss}, ◈${infLoss}. Machtgewinn der Fraktion.`);
+  f.sat = 20; f.pow = Math.min(100, f.pow + 15);
+  addLog('warn', `AUFSTAND! ${f.name} außer Kontrolle. Verluste: ₡${credLoss}, ◈${infLoss}.`);
 }
 
 function triggerCorruption(f) {

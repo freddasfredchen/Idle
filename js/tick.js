@@ -46,11 +46,10 @@ function tickState() {
     f.pow = Math.max(0, Math.min(100, f.pow + powRate * dt));
 
     // Rebellion: sat at floor, cooldown 90 ticks
-    if (f.sat <= 0.5 && GS.meta.gameTick - f.lastRebTick > 90) {
+    if (f.sat <= 0.5 && GS.meta.gameTick - f.lastRebTick > REBELLION_COOLDOWN) {
       triggerRebellion(f);
     }
-    // Corruption crisis: pow maxed, cooldown 120 ticks
-    if (f.pow >= 99.5 && GS.meta.gameTick - f.lastCorrTick > 120) {
+    if (f.pow >= 99.5 && GS.meta.gameTick - f.lastCorrTick > CORRUPTION_COOLDOWN) {
       triggerCorruption(f);
     }
   }

@@ -5,6 +5,10 @@ const LOYALTY_FLOOR = 15;
 const FACTION_POW_BASE_RATE = 0.001;
 const RAID_DURATION_TICKS = 60;
 const RAID_COST = { credits: 30, influence: 10 };
+const REBELLION_COOLDOWN  = 90;
+const CORRUPTION_COOLDOWN = 120;
+const APPEASE_COST    = { influence: 20, credits: 50 };
+const INTIMIDATE_COST = { influence: 30, loyalty: 20 };
 
 // modifiers: { buildingType: productionMultiplier }
 const PLANET_TYPES = [

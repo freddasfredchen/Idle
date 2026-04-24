@@ -27,3 +27,26 @@ function toRoman(n) {
   const r = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
   return r[n-1] || n;
 }
+
+// ── Resource helpers — costs = { resourceKey: amount } ──────────
+
+function canAfford(costs) {
+  return Object.entries(costs).every(([res, amt]) => (GS.resources[res]?.v ?? 0) >= amt);
+}
+
+function deductResources(costs) {
+  for (const [res, amt] of Object.entries(costs)) GS.resources[res].v -= amt;
+}
+
+function getMissingLabels(costs) {
+  return Object.entries(costs)
+    .filter(([res, amt]) => (GS.resources[res]?.v ?? 0) < amt)
+    .map(([res]) => GS.resources[res]?.label ?? res)
+    .join(', ');
+}
+
+function formatCost(costs) {
+  return Object.entries(costs)
+    .map(([res, amt]) => `${GS.resources[res]?.sym ?? res} ${fmt(amt)}`)
+    .join('  ');
+}
