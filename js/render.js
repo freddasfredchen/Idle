@@ -119,9 +119,7 @@ function renderTab() {
         </div>
       </div>`;
   } else if (currentTab === 'research') {
-    el.innerHTML = `
-      <div class="panel-title">Forschungsbaum</div>
-      <p class="empty-hint">Forschungszentrum nicht errichtet.<br><br>Errichte ein Forschungszentrum auf Kepler Prime um Technologien zu erforschen.</p>`;
+    renderResearch();
   } else if (currentTab === 'decrees') {
     el.innerHTML = `
       <div class="panel-title">Aktive Erlasse</div>
