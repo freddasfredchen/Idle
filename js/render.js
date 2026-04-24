@@ -22,6 +22,21 @@ function renderTick() {
 function renderResources() {
   const bar = document.getElementById('resource-bar');
   bar.innerHTML = Object.entries(GS.resources).map(([k, r]) => {
+    if (k === 'energy') {
+      const drain = r.consumption || 0;
+      const isDeficit = drain > r.v;
+      const surplus = r.v - drain;
+      const valCol = isDeficit ? '#f87171' : surplus < 2 ? '#fbbf24' : r.col;
+      const statusText = drain === 0 ? 'kein Verbrauch'
+        : isDeficit ? `⚠ ${drain.toFixed(1)} ben.`
+        : `${drain.toFixed(1)} genutzt`;
+      const statusCol = isDeficit ? '#8a3535' : '#4a7a50';
+      return `<div class="res-item">
+        <div class="res-label">${r.label}</div>
+        <div class="res-value" style="color:${valCol}">${r.sym} ${r.v.toFixed(1)}</div>
+        <div class="res-rate" style="color:${statusCol}">${statusText}</div>
+      </div>`;
+    }
     const netRate = r.rate + r.decay;
     const rateCol = netRate > 0 ? '#4a7a50' : netRate < 0 ? '#8a3535' : '#2e3e55';
     const isFull = r.v >= r.cap * 0.98;
@@ -51,10 +66,14 @@ function renderPlanet() {
       const costStr = Object.entries(costs)
         .map(([res, amt]) => `${GS.resources[res]?.sym ?? res}${fmt(amt)}`)
         .join(' ');
+      const energyLine = b.type === 'solar'
+        ? `<div class="bslot-energy prod">⚡ +${(m.prod.base + (b.level-1)*m.prod.perLevel).toFixed(1)}</div>`
+        : m.drain ? `<div class="bslot-energy drain">⚡ ${(m.drain.base + (b.level-1)*m.drain.perLevel).toFixed(1)}</div>` : '';
       return `<div class="bslot occupied${affordable ? ' can-afford' : ''}" onclick="upgradeBuilding(${i})" title="Ausbau: ${costStr}">
         <div class="bslot-level">Lv${b.level}</div>
         <div class="bslot-sym" style="color:${m.col}">${m.sym}</div>
         <div class="bslot-name">${b.name}</div>
+        ${energyLine}
         <div class="bslot-cost">↑ ${costStr}</div>
       </div>`;
     }

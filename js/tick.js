@@ -2,6 +2,7 @@ function tickState() {
   if (!GS) return;
   const dt = TICK_MS / 1000;
   for (const [k, r] of Object.entries(GS.resources)) {
+    if (k === 'energy') continue; // Energie ist Kapazität, kein Akkumulationswert
     let v = r.v + (r.rate + r.decay) * dt;
     if (k === 'loyalty') v = Math.max(LOYALTY_FLOOR, v);
     v = Math.max(0, Math.min(r.cap, v));
