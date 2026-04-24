@@ -72,9 +72,17 @@ function colonizePlanet(planetId) {
   renderAll();
 }
 
+function refreshAvailablePlanets() {
+  GS.availablePlanets = generateAvailablePlanets(5);
+  renderPlanets();
+}
+
 function renderPlanets() {
   const el = document.getElementById('tab-content');
-  let html = `<div class="panel-title">Planeten <span style="font-family:'Share Tech Mono',monospace;color:#2e4060;font-size:9px;">${GS.planets.length} kolonisiert</span></div>`;
+  let html = `<div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>Planeten <span style="font-family:'Share Tech Mono',monospace;color:#2e4060;font-size:9px;">${GS.planets.length} kolonisiert</span></span>
+    <button class="planet-view-btn" onclick="refreshAvailablePlanets()" title="Neue Ziele generieren">⟳ Refresh</button>
+  </div>`;
 
   // Colonized planets
   html += `<div class="research-tier-label">— Kolonisiert —</div>`;
