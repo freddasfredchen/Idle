@@ -1,0 +1,75 @@
+let GS = null;
+
+function createInitialState() {
+  return {
+    meta: { lastSaved: Date.now(), gameTick: 0 },
+    dynasty: {
+      name: "Haus von Steinberg",
+      ruler: { name: "Albrecht I.", traits: ["Gierig", "Paranoid"], age: 48 },
+      generation: 1,
+    },
+    resources: {
+      energy:    { v: 150,  cap: 1000, rate: 3.5,   decay: 0,       label: "Energie",    sym: "⚡", col: "#fbbf24" },
+      minerals:  { v: 80,   cap: 500,  rate: 1.2,   decay: 0,       label: "Mineralien", sym: "⬡", col: "#94a3b8" },
+      food:      { v: 200,  cap: 800,  rate: 2.1,   decay: 0,       label: "Nahrung",    sym: "◇", col: "#86efac" },
+      credits:   { v: 500,  cap: 9999, rate: 0.8,   decay: 0,       label: "Credits",    sym: "₡", col: "#c8aa4f" },
+      research:  { v: 20,   cap: 300,  rate: 0.3,   decay: 0,       label: "Forschung",  sym: "⬢", col: "#7dd3fc" },
+      influence: { v: 45,   cap: 200,  rate: 0.15,  decay: -0.03,   label: "Einfluss",   sym: "◈", col: "#e879f9" },
+      loyalty:   { v: 72,   cap: 100,  rate: 0,     decay: -0.005,  label: "Loyalität",  sym: "♥", col: "#f87171" },
+    },
+    planet: {
+      name: "Kepler Prime", type: "Startkolonie", slots: 12,
+      buildings: [
+        { id: 1, type: "solar",    name: "Solaranlage Mk.II",       level: 2, slot: 0 },
+        { id: 2, type: "mine",     name: "Asteroidenmine",           level: 1, slot: 1 },
+        { id: 3, type: "farm",     name: "Hydroponie-Komplex",       level: 1, slot: 2 },
+        { id: 4, type: "ministry", name: "Min. f. Wahrh. u. Verw.", level: 1, slot: 3 },
+      ],
+    },
+    factions: [
+      { id: "corp",    name: "Patriot. Unternehmerfront",  sat: 62, inf: 28, col: "#fbbf24" },
+      { id: "science", name: "Aufgekl. Expansionisten",    sat: 48, inf: 24, col: "#60a5fa" },
+      { id: "workers", name: "Arbeiterkollektiv Ω-7",      sat: 31, inf: 22, col: "#f87171" },
+      { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, inf: 26, col: "#a78bfa" },
+    ],
+    log: [
+      { id: 1, sev: "ok",   msg: "Kepler Prime kolonisiert. Protokoll 7-B initiiert." },
+      { id: 2, sev: "warn", msg: "Arbeiterkollektiv Ω-7: 'spontane Erholungsaktivitäten' in Sektor 3 gemeldet." },
+      { id: 3, sev: "info", msg: "Min. f. Wahrheit u. Verwandtes aufgenommen. Produktivität: statistisch vernachlässigbar gestiegen." },
+      { id: 4, sev: "warn", msg: "Loyalitätswerte sinken. Erlass 4-C ('Optimierte Freizeitgestaltung') empfohlen." },
+    ],
+  };
+}
+
+function applyOffline(state) {
+  const now = Date.now();
+  const elapsed = (now - state.meta.lastSaved) / 1000;
+  if (elapsed < 2) return { ...state, meta: { ...state.meta, lastSaved: now } };
+
+  const decayElapsed = Math.min(elapsed, MAX_OFFLINE_DECAY_S);
+  const newRes = {};
+  for (const [k, r] of Object.entries(state.resources)) {
+    let v = r.v + r.rate * elapsed + r.decay * decayElapsed;
+    if (k === 'loyalty') v = Math.max(LOYALTY_FLOOR, v);
+    v = Math.max(0, Math.min(r.cap, v));
+    newRes[k] = { ...r, v };
+  }
+
+  const mins = Math.round(elapsed / 60);
+  const newLog = [
+    { id: now, sev: "info", msg: `Offline-Protokoll: ${mins > 60 ? Math.round(mins/60)+'h' : mins+'min'} Abwesenheit kompensiert. Das Reich ist, wider Erwarten, noch existent.` },
+    ...state.log
+  ].slice(0, 25);
+
+  return { ...state, resources: newRes, log: newLog, meta: { ...state.meta, lastSaved: now } };
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(SAVE_KEY);
+    GS = saved ? applyOffline(JSON.parse(saved)) : createInitialState();
+  } catch {
+    GS = createInitialState();
+  }
+  renderAll();
+}

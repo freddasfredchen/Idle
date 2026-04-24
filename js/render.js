@@ -1,0 +1,124 @@
+function renderAll() {
+  if (!GS) return;
+  renderHeader();
+  renderResources();
+  renderPlanet();
+  renderLog();
+  renderTab();
+  renderTick();
+}
+
+function renderHeader() {
+  document.getElementById('dynasty-name').textContent = GS.dynasty.name;
+  document.getElementById('ruler-line').textContent =
+    `${GS.dynasty.ruler.name} • Generation ${toRoman(GS.dynasty.generation)} • ${GS.dynasty.ruler.traits.join(', ')}`;
+}
+
+function renderTick() {
+  document.getElementById('tick-display').textContent =
+    `PROTOKOLL ${GS.meta.gameTick.toString().padStart(8,'0')} • VERSION 0.1.0-ALPHA`;
+}
+
+function renderResources() {
+  const bar = document.getElementById('resource-bar');
+  bar.innerHTML = Object.entries(GS.resources).map(([k, r]) => {
+    const netRate = r.rate + r.decay;
+    const rateCol = netRate > 0 ? '#4a7a50' : netRate < 0 ? '#8a3535' : '#2e3e55';
+    const isFull = r.v >= r.cap * 0.98;
+    const valCol = isFull ? '#fb923c' : r.col;
+    return `<div class="res-item">
+      <div class="res-label">${r.label}</div>
+      <div class="res-value" style="color:${valCol}">${r.sym} ${fmt(r.v)}</div>
+      <div class="res-rate" style="color:${rateCol}">${fmtRate(r)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPlanet() {
+  const p = GS.planet;
+  document.getElementById('planet-title').innerHTML =
+    `<span style="font-family:'Cinzel',serif">${p.name}</span> — ${p.type} <span>${p.buildings.length}/${p.slots} Bauplätze</span>`;
+
+  const slotMap = {};
+  p.buildings.forEach(b => slotMap[b.slot] = b);
+  const grid = document.getElementById('building-grid');
+  grid.innerHTML = Array.from({length: p.slots}, (_, i) => {
+    const b = slotMap[i];
+    if (b) {
+      const m = BLDG[b.type] || {sym:'?', col:'#fff'};
+      return `<div class="bslot occupied" title="${b.name} (Stufe ${b.level})">
+        <div class="bslot-level">Lv${b.level}</div>
+        <div class="bslot-sym" style="color:${m.col}">${m.sym}</div>
+        <div class="bslot-name">${b.name}</div>
+      </div>`;
+    }
+    return `<div class="bslot" title="Leerer Bauplatz">
+      <div class="bslot-empty">+</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLog() {
+  const el = document.getElementById('log-entries');
+  el.innerHTML = GS.log.map(e =>
+    `<div class="log-entry ${e.sev}">${e.sev==='warn'?'⚠ ':e.sev==='ok'?'✓ ':'› '}${e.msg}</div>`
+  ).join('');
+}
+
+function renderTab() {
+  const el = document.getElementById('tab-content');
+  if (currentTab === 'factions') {
+    const stability = Math.round(GS.factions.reduce((a,f) => a + f.sat * f.inf/100, 0));
+    const stabCol = satColor(stability);
+    el.innerHTML = `
+      <div class="panel-title">Fraktionsstatus</div>
+      ${GS.factions.map(f => `
+        <div class="faction-row">
+          <div class="faction-header">
+            <span class="faction-name">${f.name}</span>
+            <span class="faction-sat" style="color:${satColor(f.sat)}">${Math.round(f.sat)}%</span>
+          </div>
+          <div class="faction-bar-bg">
+            <div class="faction-bar-fill" style="width:${f.sat}%;background:${satColor(f.sat)}"></div>
+          </div>
+          <div class="faction-inf">Einfluss: ${f.inf}%</div>
+        </div>
+      `).join('')}
+      <div class="stability-block">
+        <div class="stability-label">GESAMTSTABILITÄT</div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:9px;color:${stabCol}">${stability}%</span>
+        </div>
+        <div class="stability-bar-bg">
+          <div class="stability-bar-fill" style="width:${stability}%;background:${stabCol}"></div>
+        </div>
+      </div>`;
+  } else if (currentTab === 'research') {
+    el.innerHTML = `
+      <div class="panel-title">Forschungsbaum</div>
+      <p class="empty-hint">Forschungszentrum nicht errichtet.<br><br>Errichte ein Forschungszentrum auf Kepler Prime um Technologien zu erforschen.</p>`;
+  } else if (currentTab === 'decrees') {
+    el.innerHTML = `
+      <div class="panel-title">Aktive Erlasse</div>
+      <p class="empty-hint">Keine aktiven Erlasse.<br><br>Erlasse kosten Einfluss und haben dauerhafte Konsequenzen für Fraktionen und Ressourcen.</p>
+      <div style="margin-top:12px;padding:8px;border:1px solid #1a2030;border-radius:2px;">
+        <div style="color:#c8aa4f;font-size:9px;font-family:'Cinzel',serif;margin-bottom:4px;">Beispiel</div>
+        <div style="color:#354a60;font-size:9px;line-height:1.6;">Erlass 4-C: "Optimierte Freizeitgestaltung"<br>— +15% Produktion<br>— Arbeiterkollektiv Ω-7: -20 Zufriedenheit<br>— Kosten: 30 Einfluss</div>
+      </div>`;
+  } else if (currentTab === 'planets') {
+    el.innerHTML = `
+      <div class="panel-title">Planeten</div>
+      <div class="planet-card">
+        <div class="planet-card-name">${GS.planet.name}</div>
+        <div class="planet-card-sub">${GS.planet.type} • ${GS.planet.slots} Bauplätze</div>
+      </div>
+      <p class="empty-hint" style="margin-top:8px;">Weitere Planeten durch Kolonisierung erschließbar.<br><br>Benötigt: Raumwerft + Kolonisierungsschiff + 100 Einfluss.</p>`;
+  }
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTab();
+}
