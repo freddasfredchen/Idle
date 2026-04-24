@@ -2,9 +2,10 @@ function activePlanet() {
   return GS.planets[GS.activePlanetId || 0];
 }
 
-function generatePlanet(seed) {
-  const rng = (() => { let s = seed % 2147483647; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
-  const t    = PLANET_TYPES[Math.floor(rng() * PLANET_TYPES.length)];
+function generatePlanet(seed, excludeTypes = []) {
+  const rng = (() => { let s = Math.abs(seed % 2147483647) || 1; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
+  const pool = PLANET_TYPES.filter(t => !excludeTypes.includes(t.type));
+  const t    = (pool.length > 0 ? pool : PLANET_TYPES)[Math.floor(rng() * (pool.length > 0 ? pool : PLANET_TYPES).length)];
   const name = PLANET_PREFIXES[Math.floor(rng() * PLANET_PREFIXES.length)]
              + ' ' + PLANET_SUFFIXES[Math.floor(rng() * PLANET_SUFFIXES.length)];
   const slots = 6 + Math.floor(rng() * 7); // 6–12
@@ -14,6 +15,19 @@ function generatePlanet(seed) {
     credits:  250 + n * 120,
   };
   return { id: seed, name, type: t.type, sym: t.sym, col: t.col, slots, desc: t.desc, modifiers: t.modifiers, colonizeCost };
+}
+
+function generateAvailablePlanets(count = 5) {
+  const planets = [];
+  const usedTypes = [];
+  let seed = Date.now();
+  while (planets.length < count) {
+    const p = generatePlanet(seed, usedTypes);
+    usedTypes.push(p.type);
+    planets.push(p);
+    seed += 97331;
+  }
+  return planets;
 }
 
 function switchActivePlanet(idx) {
@@ -48,9 +62,10 @@ function colonizePlanet(planetId) {
   const newPlanet = { ...avail, buildings: [] };
   GS.planets.push(newPlanet);
 
-  // Replace the slot with a freshly generated planet (costs scale with new planet count)
+  // Replace the slot with a freshly generated planet of a different type
   const idx = GS.availablePlanets.findIndex(p => p.id === planetId);
-  GS.availablePlanets[idx] = generatePlanet(Date.now() + idx);
+  const takenTypes = GS.availablePlanets.filter((_, i) => i !== idx).map(p => p.type);
+  GS.availablePlanets[idx] = generatePlanet(Date.now() + idx * 97331, takenTypes);
 
   recalcRates();
   addLog('ok', `${newPlanet.name} (${newPlanet.type}) kolonisiert! ${newPlanet.slots} Bauplätze erschlossen.`);

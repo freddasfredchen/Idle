@@ -216,11 +216,9 @@ function loadState() {
     if (f.lastCorrTick === undefined) f.lastCorrTick = -999;
   }
 
-  // Generate available planets if missing (depends on generatePlanet in planets.js)
+  // Generate available planets if missing (depends on planets.js)
   if (!GS.availablePlanets || GS.availablePlanets.length < 5) {
-    const have = GS.availablePlanets || [];
-    while (have.length < 5) have.push(generatePlanet(Date.now() + have.length));
-    GS.availablePlanets = have;
+    GS.availablePlanets = generateAvailablePlanets(5);
   }
 
   recalcRates();
