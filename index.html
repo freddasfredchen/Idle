@@ -13,7 +13,7 @@
 <div id="header">
   <div>
     <div class="title-main">Galaktisches Dynastieverwaltungssystem</div>
-    <div class="title-sub" id="tick-display">PROTOKOLL 00000000 • VERSION 0.1.0-ALPHA</div>
+    <div class="title-sub" id="tick-display">PROTOKOLL 00000000 • VERSION 0.2.0</div>
   </div>
   <div style="display:flex; align-items:center;">
     <div>
@@ -44,10 +44,32 @@
     <div id="tabs">
       <button class="tab-btn active" onclick="switchTab('factions', this)">Fakt.</button>
       <button class="tab-btn" onclick="switchTab('research', this)">Forsch.</button>
+      <button class="tab-btn" onclick="switchTab('ships', this)">Schiffe</button>
       <button class="tab-btn" onclick="switchTab('decrees', this)">Erlasse</button>
-      <button class="tab-btn" onclick="switchTab('planets', this)">Planeten</button>
     </div>
     <div id="tab-content"></div>
+  </div>
+</div>
+
+<!-- BUILD MODAL -->
+<div id="build-modal" onclick="if(event.target===this)closeBuildModal()">
+  <div class="help-content">
+    <div class="help-header">
+      <div class="panel-title" style="border:none;margin:0;padding:0;">Gebäude errichten</div>
+      <button class="help-close-btn" onclick="closeBuildModal()">×</button>
+    </div>
+    <div id="build-modal-body" class="help-list"></div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="help-modal" onclick="if(event.target===this)closeHelp()">
+  <div class="help-content">
+    <div class="help-header">
+      <div class="panel-title" style="border:none;margin:0;padding:0;">Verfügbare Gebäude</div>
+      <button class="help-close-btn" onclick="closeHelp()">×</button>
+    </div>
+    <div id="help-modal-body" class="help-list"></div>
   </div>
 </div>
 
@@ -61,7 +83,14 @@
 <script src="js/utils.js"></script>
 <script src="js/state.js"></script>
 <script src="js/save.js"></script>
+<script src="js/planets.js"></script>
+<script src="js/buildings.js"></script>
+<script src="js/factions.js"></script>
+<script src="js/research.js"></script>
+<script src="js/ships.js"></script>
+<script src="js/decrees.js"></script>
 <script src="js/render.js"></script>
+<script src="js/help.js"></script>
 <script src="js/tick.js"></script>
 <script>loadState();</script>
 </body>
