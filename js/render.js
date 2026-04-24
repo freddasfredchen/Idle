@@ -140,6 +140,8 @@ function renderTab() {
       </div>`;
   } else if (currentTab === 'research') {
     renderResearch();
+  } else if (currentTab === 'ships') {
+    renderShips();
   } else if (currentTab === 'decrees') {
     renderDecrees();
   } else if (currentTab === 'planets') {
