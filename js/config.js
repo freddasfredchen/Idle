@@ -49,13 +49,24 @@ const BASE_CAPS = {
 };
 
 const BLDG = {
-  solar:    { name: "Solaranlage",         sym: "◉", col: "#fbbf24", resource: null,        prod:  { base: 5.0,  perLevel: 3.0  },                                 buildCost: { minerals: 50,  credits: 100 }, upgradeCostBase: { minerals: 30,  credits: 50   } },
-  mine:     { name: "Asteroidenmine",      sym: "⬡", col: "#94a3b8", resource: "minerals",  prod:  { base: 1.2,  perLevel: 0.8  }, drain: { base: 2.0, perLevel: 0.5 }, buildCost: { minerals: 40,  credits:  80 }, upgradeCostBase: { minerals: 30,  credits: 60   } },
-  farm:     { name: "Hydroponie-Komplex",  sym: "◇", col: "#86efac", resource: "food",      prod:  { base: 2.1,  perLevel: 1.2  }, drain: { base: 1.5, perLevel: 0.5 }, buildCost: { minerals: 30,  credits:  60 }, upgradeCostBase: { minerals: 20,  credits: 40   } },
-  ministry: { name: "Ministerium",         sym: "◆", col: "#c084fc", resource: "credits",   prod:  { base: 0.8,  perLevel: 0.5  }, drain: { base: 1.0, perLevel: 0.3 }, buildCost: { credits:  150, influence: 30 }, upgradeCostBase: { credits: 120, influence: 25 } },
-  lab:      { name: "Forschungslabor",     sym: "⬢", col: "#7dd3fc", resource: "research",  prod:  { base: 0.5,  perLevel: 0.3  }, drain: { base: 3.0, perLevel: 1.0 }, buildCost: { credits:  200, research:  10 }, upgradeCostBase: { credits: 100, minerals: 30  } },
-  barracks: { name: "Kaserne",             sym: "▲", col: "#f87171", resource: "loyalty",   prod:  { base: 0.05, perLevel: 0.03 }, drain: { base: 2.0, perLevel: 0.5 }, buildCost: { minerals: 60,  credits:  100}, upgradeCostBase: { minerals: 50, credits:  80  } },
-  shipyard: { name: "Raumwerft",           sym: "◈", col: "#e879f9", resource: "influence", prod:  { base: 0.1,  perLevel: 0.08 }, drain: { base: 4.0, perLevel: 1.0 }, buildCost: { minerals: 100, credits:  200}, upgradeCostBase: { minerals: 100, credits: 150 } },
+  solar:     { name: "Solaranlage",                              sym: "◉", col: "#fbbf24", resource: null,        prod: { base: 5.0,  perLevel: 3.0  },                                  buildCost: { minerals: 50,  credits: 100 }, upgradeCostBase: { minerals: 30,  credits: 50   } },
+  mine:      { name: "Asteroidenmine",                           sym: "⬡", col: "#94a3b8", resource: "minerals",  prod: { base: 1.2,  perLevel: 0.8  }, drain: { base: 2.0, perLevel: 0.5 }, buildCost: { minerals: 40,  credits:  80 }, upgradeCostBase: { minerals: 30,  credits: 60   } },
+  farm:      { name: "Hydroponie-Komplex",                       sym: "◇", col: "#86efac", resource: "food",      prod: { base: 2.1,  perLevel: 1.2  }, drain: { base: 1.5, perLevel: 0.5 }, buildCost: { minerals: 30,  credits:  60 }, upgradeCostBase: { minerals: 20,  credits: 40   } },
+  ministry:  { name: "Ministerium",                              sym: "◆", col: "#c084fc", resource: "credits",   prod: { base: 0.8,  perLevel: 0.5  }, drain: { base: 1.0, perLevel: 0.3 }, buildCost: { credits:  150, influence: 30 }, upgradeCostBase: { credits: 120, influence: 25 } },
+  lab:       { name: "Forschungslabor",                          sym: "⬢", col: "#7dd3fc", resource: "research",  prod: { base: 0.5,  perLevel: 0.3  }, drain: { base: 3.0, perLevel: 1.0 }, buildCost: { credits:  200, research:  10 }, upgradeCostBase: { credits: 100, minerals: 30  } },
+  barracks:  { name: "Kaserne",                                  sym: "▲", col: "#f87171", resource: "loyalty",   prod: { base: 0.05, perLevel: 0.03 }, drain: { base: 2.0, perLevel: 0.5 }, buildCost: { minerals: 60,  credits:  100}, upgradeCostBase: { minerals: 50, credits:  80  } },
+  shipyard:  { name: "Raumwerft",                                sym: "◈", col: "#e879f9", resource: "influence", prod: { base: 0.1,  perLevel: 0.08 }, drain: { base: 4.0, perLevel: 1.0 }, buildCost: { minerals: 100, credits:  200}, upgradeCostBase: { minerals: 100, credits: 150 } },
+  // ── OGame-Inspiriert ─────────────────────────────────────────────────────────────────────────────────
+  fusion:    { name: "Kernfusionskomplex 'Prometheus'",          sym: "⊕", col: "#38bdf8", resource: null,        prod: { base: 20.0, perLevel: 12.0 },                                  buildCost: { minerals: 400, credits: 800 },             upgradeCostBase: { minerals: 250, credits: 500 },
+               desc: "Wandelt Wasserstoff in Energie um. Kostet ein Vermögen, hält Versprechen zu 94%. Die restlichen 6% sind 'Forschungsmaterial'." },
+  crystal:   { name: "Epistemologische Extraktionskammer",       sym: "◇", col: "#a78bfa", resource: "research",  prod: { base: 0.9,  perLevel: 0.5  }, drain: { base: 4.0, perLevel: 1.2 }, buildCost: { minerals: 80,  research:  20 }, upgradeCostBase: { minerals: 60,  research: 15  },
+               desc: "Gewinnt Wissenskristalle aus Planetenformationen. Das Bergbaukollektiv besteht darauf, dass Kristalle 'sprechen'. HR ist informiert." },
+  deuterium: { name: "Amt für Flüssige Überzeugungen",          sym: "◎", col: "#67e8f9", resource: "influence", prod: { base: 0.25, perLevel: 0.15 }, drain: { base: 2.5, perLevel: 0.7 }, buildCost: { credits:  150, minerals:  80 }, upgradeCostBase: { credits: 100, minerals: 60  },
+               desc: "Destilliert Deuterium zu politisch verwertbarem Einfluss. Einfluss schmeckt angeblich nach Salzlakritz." },
+  nanite:    { name: "Subatomare Abbaugesellschaft mbH",         sym: "⬡", col: "#6ee7b7", resource: "minerals",  prod: { base: 2.5,  perLevel: 1.5  }, drain: { base: 5.0, perLevel: 1.5 }, buildCost: { minerals: 500, credits: 1000, research: 50 }, upgradeCostBase: { minerals: 300, credits: 600  },
+               desc: "Nano-Roboter schürfen autonom. Das Arbeiterkollektiv Ω-7 nennt es 'Beschäftigungsoptimierung'. Wir auch." },
+  robotics:  { name: "Automatisiertes Verwaltungsministerium",   sym: "▣", col: "#fb923c", resource: "credits",   prod: { base: 1.2,  perLevel: 0.7  }, drain: { base: 3.0, perLevel: 0.8 }, buildCost: { minerals: 150, credits: 250,  research: 15  }, upgradeCostBase: { minerals: 100, credits: 200  },
+               desc: "Roboter ersetzen Bürokraten. Effizienz stieg um 340%. Beschwerden sanken auf null — aus verschiedenen Gründen." },
 };
 
 const RESEARCH = {

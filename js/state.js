@@ -141,8 +141,8 @@ function recalcRates() {
       const meta = BLDG[b.type];
       if (!meta) continue;
       const planetMult = pm[b.type] || 1;
-      if (b.type === 'solar') {
-        const mult = (buildProdMult['solar'] || 1) * (decreeBuildMult['solar'] || 1) * decreeProdAllMult * planetMult;
+      if (!meta.resource) {
+        const mult = (buildProdMult[b.type] || 1) * (decreeBuildMult[b.type] || 1) * decreeProdAllMult * planetMult;
         energyProd += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * mult;
       } else if (meta.drain) {
         energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * researchDrainMult;
@@ -158,7 +158,6 @@ function recalcRates() {
   for (const planet of GS.planets) {
     const pm = planet.modifiers || {};
     for (const b of planet.buildings) {
-      if (b.type === 'solar') continue;
       const meta = BLDG[b.type];
       if (!meta?.resource) continue;
       const res = GS.resources[meta.resource];

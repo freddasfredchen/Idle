@@ -66,7 +66,7 @@ function renderPlanet() {
       const costStr = Object.entries(costs)
         .map(([res, amt]) => `${GS.resources[res]?.sym ?? res}${fmt(amt)}`)
         .join(' ');
-      const energyLine = b.type === 'solar'
+      const energyLine = !m.resource
         ? `<div class="bslot-energy prod">⚡ +${(m.prod.base + (b.level-1)*m.prod.perLevel).toFixed(1)}</div>`
         : m.drain ? `<div class="bslot-energy drain">⚡ ${(m.drain.base + (b.level-1)*m.drain.perLevel).toFixed(1)}</div>` : '';
       return `<div class="bslot occupied${affordable ? ' can-afford' : ''}" onclick="upgradeBuilding(${i})" title="Ausbau: ${costStr}">

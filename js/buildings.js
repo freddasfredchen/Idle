@@ -56,7 +56,7 @@ function selectBuild(slot) {
     const costStr = Object.entries(cost)
       .map(([res, amt]) => `${GS.resources[res]?.sym ?? res} ${fmt(amt)}`)
       .join('  ');
-    const prodInfo = type === 'solar'
+    const prodInfo = !m.resource
       ? `⚡ +${m.prod.base} kW`
       : `${GS.resources[m.resource]?.sym ?? ''} +${m.prod.base}/s${m.drain ? `  ⚡ ${m.drain.base} kW` : ''}`;
 
@@ -66,6 +66,7 @@ function selectBuild(slot) {
         <div>
           <div class="build-option-name">${m.name}</div>
           <div class="build-option-prod">${prodInfo}</div>
+          ${m.desc ? `<div style="color:#2e4060;font-size:8px;margin-top:2px;font-style:italic">${m.desc}</div>` : ''}
         </div>
       </div>
       <div class="build-option-right">
