@@ -87,7 +87,10 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 .bslot-name { color: #445870; font-size: 8px; text-align: center; margin-top: 4px; line-height: 1.3; }
 .bslot-level { position: absolute; top: 3px; right: 5px; color: #c8aa4f; font-size: 8px; }
 .bslot-empty { color: #151e2d; font-size: 18px; }
-.bslot-cost { color: #1e3040; font-size: 7px; margin-top: 3px; text-align: center; line-height: 1.4; }
+.bslot-cost { color: #1e3040; font-size: 7px; margin-top: 2px; text-align: center; line-height: 1.4; }
+.bslot-energy { font-size: 7px; margin-top: 2px; text-align: center; }
+.bslot-energy.prod { color: #4a6020; }
+.bslot-energy.drain { color: #2a3828; }
 .bslot.can-afford { border-color: #1e3828; }
 .bslot.can-afford .bslot-cost { color: #3a6a48; }
 .bslot.can-afford:hover { border-color: #2e6040; background: #081510; }

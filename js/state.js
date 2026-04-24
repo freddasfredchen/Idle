@@ -9,7 +9,7 @@ function createInitialState() {
       generation: 1,
     },
     resources: {
-      energy:    { v: 150,  cap: 1000, rate: 0, decay: 0,       label: "Energie",    sym: "⚡", col: "#fbbf24" },
+      energy:    { v: 0, cap: 999, rate: 0, decay: 0, consumption: 0, label: "Energie", sym: "⚡", col: "#fbbf24" },
       minerals:  { v: 80,   cap: 500,  rate: 0, decay: 0,       label: "Mineralien", sym: "⬡", col: "#94a3b8" },
       food:      { v: 200,  cap: 800,  rate: 0, decay: 0,       label: "Nahrung",    sym: "◇", col: "#86efac" },
       credits:   { v: 500,  cap: 9999, rate: 0, decay: 0,       label: "Credits",    sym: "₡", col: "#c8aa4f" },
@@ -49,6 +49,7 @@ function applyOffline(state) {
   const decayElapsed = Math.min(elapsed, MAX_OFFLINE_DECAY_S);
   const newRes = {};
   for (const [k, r] of Object.entries(state.resources)) {
+    if (k === 'energy') { newRes[k] = { ...r }; continue; }
     let v = r.v + r.rate * elapsed + r.decay * decayElapsed;
     if (k === 'loyalty') v = Math.max(LOYALTY_FLOOR, v);
     v = Math.max(0, Math.min(r.cap, v));
@@ -65,15 +66,38 @@ function applyOffline(state) {
 }
 
 function recalcRates() {
+  // Reset rates for non-energy resources
   for (const [k, r] of Object.entries(GS.resources)) {
-    r.rate = BASE_RATES[k] || 0;
+    if (k !== 'energy') r.rate = BASE_RATES[k] || 0;
   }
+
+  // Energy: sum production from solar, sum drain from all others
+  let energyProd = 0;
+  let energyDrain = 0;
   for (const b of GS.planet.buildings) {
+    const meta = BLDG[b.type];
+    if (!meta) continue;
+    if (b.type === 'solar') {
+      energyProd += meta.prod.base + (b.level - 1) * meta.prod.perLevel;
+    } else if (meta.drain) {
+      energyDrain += meta.drain.base + (b.level - 1) * meta.drain.perLevel;
+    }
+  }
+  GS.resources.energy.v = energyProd;
+  GS.resources.energy.consumption = energyDrain;
+  GS.resources.energy.rate = 0;
+
+  // Efficiency: if drain > prod, all buildings run at reduced capacity
+  const efficiency = energyDrain > 0 ? Math.min(1, energyProd / energyDrain) : 1;
+
+  // Apply production rates scaled by efficiency
+  for (const b of GS.planet.buildings) {
+    if (b.type === 'solar') continue;
     const meta = BLDG[b.type];
     if (!meta?.resource) continue;
     const res = GS.resources[meta.resource];
     if (!res) continue;
-    res.rate += meta.prod.base + (b.level - 1) * meta.prod.perLevel;
+    res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency;
   }
 }
 
