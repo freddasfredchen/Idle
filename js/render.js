@@ -121,13 +121,7 @@ function renderTab() {
   } else if (currentTab === 'research') {
     renderResearch();
   } else if (currentTab === 'decrees') {
-    el.innerHTML = `
-      <div class="panel-title">Aktive Erlasse</div>
-      <p class="empty-hint">Keine aktiven Erlasse.<br><br>Erlasse kosten Einfluss und haben dauerhafte Konsequenzen für Fraktionen und Ressourcen.</p>
-      <div style="margin-top:12px;padding:8px;border:1px solid #1a2030;border-radius:2px;">
-        <div style="color:#c8aa4f;font-size:9px;font-family:'Cinzel',serif;margin-bottom:4px;">Beispiel</div>
-        <div style="color:#354a60;font-size:9px;line-height:1.6;">Erlass 4-C: "Optimierte Freizeitgestaltung"<br>— +15% Produktion<br>— Arbeiterkollektiv Ω-7: -20 Zufriedenheit<br>— Kosten: 30 Einfluss</div>
-      </div>`;
+    renderDecrees();
   } else if (currentTab === 'planets') {
     el.innerHTML = `
       <div class="panel-title">Planeten</div>

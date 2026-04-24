@@ -231,3 +231,15 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 }
 .research-btn:hover:not([disabled]) { color: #4ade80; border-color: #4ade80; }
 .research-btn[disabled] { color: #1e2d3a; border-color: #141e2a; cursor: default; }
+.research-faction-fx { color: #3a4828; font-size: 8px; margin-bottom: 4px; }
+
+/* DECREES */
+.research-item.decree-active { border-color: #3a5028; background: #060e05; }
+.decree-effects { color: #2e4828; font-size: 8px; margin-bottom: 4px; line-height: 1.5; }
+.decree-active-label { color: #3a6040; font-size: 8px; flex: 1; }
+.decree-repeal-btn {
+  background: none; border: 1px solid #3a2828; color: #6a3838; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 2px 8px;
+  letter-spacing: 1px; transition: color 0.2s, border-color 0.2s; white-space: nowrap;
+}
+.decree-repeal-btn:hover { color: #f87171; border-color: #f87171; }

@@ -33,6 +33,7 @@ function createInitialState() {
       { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, inf: 26, col: "#a78bfa" },
     ],
     research: [],
+    decrees: [],
     log: [
       { id: 1, sev: "ok",   msg: "Kepler Prime kolonisiert. Protokoll 7-B initiiert." },
       { id: 2, sev: "warn", msg: "Arbeiterkollektiv Ω-7: 'spontane Erholungsaktivitäten' in Sektor 3 gemeldet." },
@@ -73,10 +74,11 @@ function recalcRates() {
     if (BASE_CAPS[k] !== undefined) r.cap = BASE_CAPS[k];
   }
 
-  // Aggregate research effects
+  // ── Research effects ──────────────────────────────────────────
   const buildProdMult = {};
-  let drainMult = 1;
+  let researchDrainMult = 1;
   let loyaltyDecayMult = 1;
+
   for (const id of (GS.research || [])) {
     const r = RESEARCH[id];
     if (!r) continue;
@@ -84,7 +86,7 @@ function recalcRates() {
     if (e.type === 'prod_mult') {
       buildProdMult[e.building] = (buildProdMult[e.building] || 1) * e.multiplier;
     } else if (e.type === 'drain_mult') {
-      drainMult *= e.multiplier;
+      researchDrainMult *= e.multiplier;
     } else if (e.type === 'cap_increase') {
       for (const res of e.resources) {
         if (GS.resources[res]) GS.resources[res].cap += e.amount;
@@ -96,40 +98,74 @@ function recalcRates() {
     } else if (e.type === 'loyalty_decay_mult') {
       loyaltyDecayMult *= e.multiplier;
     }
+    // faction_sat_rate and faction_inf_delta handled in tick / doResearch
   }
 
-  // Apply loyalty decay research
-  GS.resources.loyalty.decay = -0.005 * loyaltyDecayMult;
+  // ── Decree rate effects ───────────────────────────────────────
+  let decreeProdAllMult = 1;
+  const decreeBuildMult = {};
+  const decreeFlatRate = {};
+  let decreeLoyaltyNoDecay = false;
 
-  // Energy: sum production from solar (with multiplier), sum drain from all others
+  for (const id of (GS.decrees || [])) {
+    const d = DECREES[id];
+    if (!d?.rateEffects) continue;
+    const e = d.rateEffects;
+    if (e.prod_all_mult) decreeProdAllMult *= e.prod_all_mult;
+    if (e.building_mult) {
+      for (const [btype, mult] of Object.entries(e.building_mult)) {
+        decreeBuildMult[btype] = (decreeBuildMult[btype] || 1) * mult;
+      }
+    }
+    if (e.resource_flat) {
+      for (const [res, delta] of Object.entries(e.resource_flat)) {
+        decreeFlatRate[res] = (decreeFlatRate[res] || 0) + delta;
+      }
+    }
+    if (e.loyalty_no_decay) decreeLoyaltyNoDecay = true;
+  }
+
+  // Loyalty decay: decree surveillance overrides research multiplier
+  if (decreeLoyaltyNoDecay) {
+    GS.resources.loyalty.decay = 0;
+  } else {
+    GS.resources.loyalty.decay = -0.005 * loyaltyDecayMult;
+  }
+
+  // ── Energy computation ────────────────────────────────────────
   let energyProd = 0;
   let energyDrain = 0;
   for (const b of GS.planet.buildings) {
     const meta = BLDG[b.type];
     if (!meta) continue;
     if (b.type === 'solar') {
-      const mult = buildProdMult['solar'] || 1;
+      const mult = (buildProdMult['solar'] || 1) * (decreeBuildMult['solar'] || 1) * decreeProdAllMult;
       energyProd += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * mult;
     } else if (meta.drain) {
-      energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * drainMult;
+      energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * researchDrainMult;
     }
   }
   GS.resources.energy.v = energyProd;
   GS.resources.energy.consumption = energyDrain;
   GS.resources.energy.rate = 0;
 
-  // Efficiency: if drain > prod, all buildings run at reduced capacity
   const efficiency = energyDrain > 0 ? Math.min(1, energyProd / energyDrain) : 1;
 
-  // Apply production rates scaled by efficiency and research multipliers
+  // ── Building production rates ─────────────────────────────────
   for (const b of GS.planet.buildings) {
     if (b.type === 'solar') continue;
     const meta = BLDG[b.type];
     if (!meta?.resource) continue;
     const res = GS.resources[meta.resource];
     if (!res) continue;
-    const mult = buildProdMult[b.type] || 1;
-    res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * mult;
+    const researchMult = buildProdMult[b.type] || 1;
+    const decreeMult = (decreeBuildMult[b.type] || 1) * decreeProdAllMult;
+    res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * researchMult * decreeMult;
+  }
+
+  // Flat rate bonuses from active decrees (e.g. credits drain from research_fund)
+  for (const [res, delta] of Object.entries(decreeFlatRate)) {
+    if (GS.resources[res]) GS.resources[res].rate += delta;
   }
 }
 
@@ -140,6 +176,8 @@ function loadState() {
   } catch {
     GS = createInitialState();
   }
+  if (!GS.research) GS.research = [];
+  if (!GS.decrees)  GS.decrees  = [];
   recalcRates();
   renderAll();
 }

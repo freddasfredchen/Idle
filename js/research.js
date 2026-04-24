@@ -35,11 +35,38 @@ function doResearch(id) {
   for (const [res, amt] of Object.entries(r.cost)) {
     GS.resources[res].v -= amt;
   }
+
+  // Immediate one-time effects
+  if (r.effect.type === 'faction_inf_delta') {
+    for (const [fId, delta] of Object.entries(r.effect.deltas)) {
+      const f = GS.factions.find(f => f.id === fId);
+      if (f) f.inf = Math.max(0, f.inf + delta);
+    }
+  }
+
   if (!GS.research) GS.research = [];
   GS.research.push(id);
   recalcRates();
   addLog('ok', `Forschung abgeschlossen: "${r.name}".`);
   renderAll();
+}
+
+function factionEffectDesc(effect) {
+  if (effect.type === 'faction_sat_rate') {
+    return Object.entries(effect.rates).map(([fId, rate]) => {
+      const f = GS.factions.find(f => f.id === fId);
+      const name = f ? f.name.split(' ')[0] : fId;
+      return `${name} ${rate > 0 ? '+' : ''}${(rate * 60).toFixed(1)}/min`;
+    }).join(', ');
+  }
+  if (effect.type === 'faction_inf_delta') {
+    return Object.entries(effect.deltas).map(([fId, d]) => {
+      const f = GS.factions.find(f => f.id === fId);
+      const name = f ? f.name.split(' ')[0] : fId;
+      return `${name} Einfluss ${d > 0 ? '+' : ''}${d}`;
+    }).join(', ');
+  }
+  return null;
 }
 
 function renderResearch() {
@@ -65,6 +92,7 @@ function renderResearch() {
         .map(([res, amt]) => `${GS.resources[res]?.sym ?? res} ${amt}`)
         .join('  ');
       const reqStr = r.requires.map(req => RESEARCH[req]?.name ?? req).join(', ');
+      const fxStr = factionEffectDesc(r.effect);
 
       html += `<div class="research-item${isDone ? ' done' : !isUnlocked ? ' locked' : ''}">
         <div class="research-head">
@@ -72,6 +100,7 @@ function renderResearch() {
           <span class="research-name">${r.name}</span>
         </div>
         <div class="research-desc">${r.desc}</div>
+        ${fxStr && !isDone ? `<div class="research-faction-fx">Fraktionen: ${fxStr}</div>` : ''}
         ${reqStr && !isDone ? `<div class="research-req">Benötigt: ${reqStr}</div>` : ''}
         <div class="research-meta">
           <span class="research-cost">${isDone ? '' : costStr}</span>
