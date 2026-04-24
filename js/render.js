@@ -95,20 +95,40 @@ function renderTab() {
   if (currentTab === 'factions') {
     const stability = Math.round(GS.factions.reduce((a,f) => a + f.sat * f.inf/100, 0));
     const stabCol = satColor(stability);
+    const canAppease    = GS.resources.influence.v >= 20 && GS.resources.credits.v >= 50;
+    const canIntimidate = GS.resources.influence.v >= 30 && GS.resources.loyalty.v >= 20;
     el.innerHTML = `
       <div class="panel-title">Fraktionsstatus</div>
-      ${GS.factions.map(f => `
-        <div class="faction-row">
+      ${GS.factions.map(f => {
+        const pow = f.pow || 0;
+        const satC = satColor(f.sat);
+        const powC = powColor(pow);
+        const satCrit  = f.sat < 20;
+        const powCrit  = pow  > 80;
+        return `<div class="faction-row">
           <div class="faction-header">
             <span class="faction-name">${f.name}</span>
-            <span class="faction-sat" style="color:${satColor(f.sat)}">${Math.round(f.sat)}%</span>
+            <span>${satCrit ? '<span class="faction-warn rebellion">⚠ AUFSTAND</span>' : ''}${powCrit ? '<span class="faction-warn corruption"> ⚠ KORRUPTION</span>' : ''}</span>
           </div>
-          <div class="faction-bar-bg">
-            <div class="faction-bar-fill" style="width:${f.sat}%;background:${satColor(f.sat)}"></div>
+          <div class="faction-bar-row">
+            <span class="faction-bar-lbl">Zuf.</span>
+            <div class="faction-bar-bg"><div class="faction-bar-fill" style="width:${f.sat}%;background:${satC}"></div></div>
+            <span style="color:${satC};font-size:8px;font-weight:bold;min-width:26px;text-align:right">${Math.round(f.sat)}%</span>
           </div>
-          <div class="faction-inf">Einfluss: ${f.inf}%</div>
-        </div>
-      `).join('')}
+          <div class="faction-bar-row">
+            <span class="faction-bar-lbl">Macht</span>
+            <div class="faction-bar-bg"><div class="faction-bar-fill" style="width:${pow}%;background:${powC}"></div></div>
+            <span style="color:${powC};font-size:8px;font-weight:bold;min-width:26px;text-align:right">${Math.round(pow)}%</span>
+          </div>
+          <div class="faction-footer">
+            <span class="faction-inf">Einfluss: ${f.inf}%</span>
+            <div class="faction-actions">
+              <button class="faction-action-btn" ${canAppease ? `onclick="appeaseFaction('${f.id}')"` : 'disabled'} title="Beschwichtigen (◈20 ₡50): Zuf.+20, Macht−10">Besch.</button>
+              <button class="faction-action-btn intimidate" ${canIntimidate ? `onclick="intimidateFaction('${f.id}')"` : 'disabled'} title="Einschüchtern (◈30 ♥20): Macht−20, Zuf.−10">Einsch.</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
       <div class="stability-block">
         <div class="stability-label">GESAMTSTABILITÄT</div>
         <div style="display:flex;justify-content:space-between;margin-bottom:4px;">

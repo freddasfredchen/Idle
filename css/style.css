@@ -120,13 +120,30 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 #tab-content { flex: 1; padding: 12px; overflow-y: auto; }
 
 /* FACTION */
-.faction-row { margin-bottom: 12px; }
-.faction-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.faction-row { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #0d1420; }
+.faction-row:last-of-type { border-bottom: none; }
+.faction-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .faction-name { color: #607090; font-size: 9px; }
-.faction-sat { font-size: 10px; font-weight: bold; }
-.faction-bar-bg { height: 3px; background: #131c28; border-radius: 2px; overflow: hidden; }
+.faction-bar-row { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+.faction-bar-lbl { color: #253545; font-size: 7px; letter-spacing: 0.5px; width: 26px; text-align: right; flex-shrink: 0; }
+.faction-bar-bg { flex: 1; height: 4px; background: #131c28; border-radius: 2px; overflow: hidden; }
 .faction-bar-fill { height: 100%; transition: width 0.8s; border-radius: 2px; }
-.faction-inf { color: #253545; font-size: 8px; margin-top: 2px; }
+.faction-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.faction-inf { color: #253545; font-size: 8px; }
+.faction-actions { display: flex; gap: 4px; }
+.faction-action-btn {
+  background: none; border: 1px solid #1e2d45; color: #3a5070; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: 7px; padding: 2px 5px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.faction-action-btn:hover:not([disabled]) { color: #c8aa4f; border-color: #c8aa4f; }
+.faction-action-btn[disabled] { opacity: 0.35; cursor: default; }
+.faction-action-btn.intimidate { border-color: #2a1e30; color: #4a2a50; }
+.faction-action-btn.intimidate:hover:not([disabled]) { color: #c084fc; border-color: #c084fc; }
+.faction-warn { font-size: 7px; letter-spacing: 1px; font-weight: bold; }
+.faction-warn.rebellion  { color: #f87171; animation: pulse 1.5s ease-in-out infinite; }
+.faction-warn.corruption { color: #fb923c; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* LOG */
 #log-panel {

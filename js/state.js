@@ -27,10 +27,10 @@ function createInitialState() {
       ],
     },
     factions: [
-      { id: "corp",    name: "Patriot. Unternehmerfront",  sat: 62, inf: 28, col: "#fbbf24" },
-      { id: "science", name: "Aufgekl. Expansionisten",    sat: 48, inf: 24, col: "#60a5fa" },
-      { id: "workers", name: "Arbeiterkollektiv Ω-7",      sat: 31, inf: 22, col: "#f87171" },
-      { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, inf: 26, col: "#a78bfa" },
+      { id: "corp",    name: "Patriot. Unternehmerfront",  sat: 62, pow: 35, inf: 28, col: "#fbbf24", lastRebTick: -999, lastCorrTick: -999 },
+      { id: "science", name: "Aufgekl. Expansionisten",    sat: 48, pow: 20, inf: 24, col: "#60a5fa", lastRebTick: -999, lastCorrTick: -999 },
+      { id: "workers", name: "Arbeiterkollektiv Ω-7",      sat: 31, pow: 45, inf: 22, col: "#f87171", lastRebTick: -999, lastCorrTick: -999 },
+      { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, pow: 25, inf: 26, col: "#a78bfa", lastRebTick: -999, lastCorrTick: -999 },
     ],
     research: [],
     decrees: [],
@@ -163,9 +163,15 @@ function recalcRates() {
     res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * researchMult * decreeMult;
   }
 
-  // Flat rate bonuses from active decrees (e.g. credits drain from research_fund)
+  // Flat rate bonuses from active decrees
   for (const [res, delta] of Object.entries(decreeFlatRate)) {
     if (GS.resources[res]) GS.resources[res].rate += delta;
+  }
+
+  // Passive corruption drain when faction power > 80
+  for (const f of (GS.factions || [])) {
+    const pow = f.pow || 0;
+    if (pow > 80) GS.resources.credits.rate -= (pow - 80) * 0.003;
   }
 }
 
@@ -178,6 +184,11 @@ function loadState() {
   }
   if (!GS.research) GS.research = [];
   if (!GS.decrees)  GS.decrees  = [];
+  for (const f of GS.factions) {
+    if (f.pow           === undefined) f.pow           = 30;
+    if (f.lastRebTick   === undefined) f.lastRebTick   = -999;
+    if (f.lastCorrTick  === undefined) f.lastCorrTick  = -999;
+  }
   recalcRates();
   renderAll();
 }

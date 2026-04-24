@@ -11,25 +11,48 @@ function tickState() {
     GS.resources[k].v = v;
   }
 
-  // Faction satisfaction rates from active decrees and research
-  const factionRates = {};
+  // Faction satisfaction + power changes
+  const factionSatRates = {};
+  const factionPowRates = {};
+
   for (const id of (GS.decrees || [])) {
     const d = DECREES[id];
-    if (!d?.factionSatRate) continue;
-    for (const [fId, rate] of Object.entries(d.factionSatRate)) {
-      factionRates[fId] = (factionRates[fId] || 0) + rate;
+    for (const [fId, rate] of Object.entries(d?.factionSatRate || {})) {
+      factionSatRates[fId] = (factionSatRates[fId] || 0) + rate;
+    }
+    for (const [fId, rate] of Object.entries(d?.factionPowRate || {})) {
+      factionPowRates[fId] = (factionPowRates[fId] || 0) + rate;
     }
   }
   for (const id of (GS.research || [])) {
     const r = RESEARCH[id];
-    if (r?.effect?.type !== 'faction_sat_rate') continue;
-    for (const [fId, rate] of Object.entries(r.effect.rates)) {
-      factionRates[fId] = (factionRates[fId] || 0) + rate;
+    if (r?.effect?.type === 'faction_sat_rate') {
+      for (const [fId, rate] of Object.entries(r.effect.rates)) {
+        factionSatRates[fId] = (factionSatRates[fId] || 0) + rate;
+      }
     }
   }
+
   for (const f of GS.factions) {
-    const rate = factionRates[f.id] || 0;
-    if (rate !== 0) f.sat = Math.max(0, Math.min(100, f.sat + rate * dt));
+    // Satisfaction drift
+    const satRate = factionSatRates[f.id] || 0;
+    if (satRate !== 0) f.sat = Math.max(0, Math.min(100, f.sat + satRate * dt));
+
+    // Power growth: base + satisfaction bonus + decree modifiers
+    let powRate = FACTION_POW_BASE_RATE;
+    if (f.sat > 85) powRate += 0.002;
+    else if (f.sat > 70) powRate += 0.001;
+    powRate += (factionPowRates[f.id] || 0);
+    f.pow = Math.max(0, Math.min(100, f.pow + powRate * dt));
+
+    // Rebellion: sat at floor, cooldown 90 ticks
+    if (f.sat <= 0.5 && GS.meta.gameTick - f.lastRebTick > 90) {
+      triggerRebellion(f);
+    }
+    // Corruption crisis: pow maxed, cooldown 120 ticks
+    if (f.pow >= 99.5 && GS.meta.gameTick - f.lastCorrTick > 120) {
+      triggerCorruption(f);
+    }
   }
 
   GS.meta.gameTick++;

@@ -2,6 +2,7 @@ const SAVE_KEY = 'gds_v2';
 const TICK_MS = 1000;
 const MAX_OFFLINE_DECAY_S = 21600;
 const LOYALTY_FLOOR = 15;
+const FACTION_POW_BASE_RATE = 0.001; // kW/s Machtzuwachs (100 in ~16min ohne Gegenmaßnahmen)
 
 let currentTab = 'factions';
 
@@ -24,16 +25,8 @@ const BLDG = {
   shipyard: { name: "Raumwerft",           sym: "◈", col: "#e879f9", resource: "influence", prod:  { base: 0.1,  perLevel: 0.08 }, drain: { base: 4.0, perLevel: 1.0 }, buildCost: { minerals: 100, credits:  200}, upgradeCostBase: { minerals: 100, credits: 150 } },
 };
 
-// effect types:
-//   prod_mult           → { building, multiplier }       – applied in recalcRates per building
-//   drain_mult          → { multiplier }                  – applied in recalcRates to energy drain
-//   cap_increase        → { resources[], amount }         – applied in recalcRates
-//   cap_increase_all    → { amount }                      – applied in recalcRates
-//   loyalty_decay_mult  → { multiplier }                  – applied in recalcRates
-//   faction_sat_rate    → { rates: {factionId: perSec} }  – applied each tick
-//   faction_inf_delta   → { deltas: {factionId: delta} }  – applied once on research completion
 const RESEARCH = {
-  // ── Stufe 1 (keine Voraussetzungen) ──────────────────────────
+  // ── Stufe 1 ──────────────────────────────────────────────────
   mining_tech: {
     name: "Verbesserte Bergbautechnik", sym: "⬡", tier: 1,
     desc: "Asteroidenminen produzieren 25% mehr Mineralien.",
@@ -79,7 +72,7 @@ const RESEARCH = {
   },
   propaganda: {
     name: "Propaganda-Netz", sym: "◎", tier: 2,
-    desc: "Staatspropaganda stabilisiert Corp und Orden (+0.02/s), destabilisiert das Arbeiterkollektiv (-0.05/s).",
+    desc: "Staatspropaganda stabilisiert Corp und Orden (+0.02/s), destabilisiert das Arbeiterkollektiv (−0.05/s Zufriedenheit).",
     cost: { research: 40, credits: 60 }, requires: ['fiscal'],
     effect: { type: 'faction_sat_rate', rates: { corp: 0.02, order: 0.02, workers: -0.05 } },
   },
@@ -104,55 +97,58 @@ const RESEARCH = {
   },
 };
 
-// rateEffects:
-//   prod_all_mult   → multiplier on all non-solar building production
-//   building_mult   → { btype: multiplier }
-//   resource_flat   → { res: delta/s } added directly to resource rate
-//   loyalty_no_decay → boolean, overrides loyalty decay to 0
-//
-// factionSatRate: { factionId: perSecond } – applied each tick while decree is active
+// factionSatRate: { factionId: sat/s }   – while active
+// factionPowRate: { factionId: pow/s }   – while active (negative = suppress power)
+// rateEffects:  see state.js recalcRates
 const DECREES = {
+  // ── Produktion ────────────────────────────────────────────────
   leisure_opt: {
     name: "Optimierte Freizeitgestaltung", sym: "⚙",
-    desc: "+15% Produktion aller Gebäude. Das Arbeiterkollektiv verliert stetig an Zufriedenheit.",
+    desc: "+15% Produktion aller Gebäude. Arbeiter verlieren stetig Zufriedenheit und werden radikaler.",
     cost: { influence: 30 },
     rateEffects: { prod_all_mult: 1.15 },
     factionSatRate: { workers: -0.05 },
+    factionPowRate: { workers: 0.003 },
   },
   war_tax: {
     name: "Kriegssteuer", sym: "₡",
-    desc: "+40% Kredite aus Ministerien. Die Unternehmerfront verliert stetig an Zufriedenheit.",
+    desc: "+40% Kredite aus Ministerien. Die Unternehmerfront verliert Zufriedenheit und Geduld.",
     cost: { influence: 25 },
     rateEffects: { building_mult: { ministry: 1.4 } },
     factionSatRate: { corp: -0.04 },
+    factionPowRate: { corp: 0.002 },
   },
   surveillance: {
     name: "Überwachungsprogramm", sym: "◉",
-    desc: "Loyalitätsverfall komplett gestoppt. Die Aufgeklärten Expansionisten verlieren an Zufriedenheit.",
+    desc: "Loyalitätsverfall gestoppt. Wissenschaftler verlieren Zufriedenheit, ihr politischer Einfluss schwindet.",
     cost: { influence: 45 },
     rateEffects: { loyalty_no_decay: true },
     factionSatRate: { science: -0.04 },
+    factionPowRate: { science: -0.003 },
   },
   labor_duty: {
     name: "Arbeitspflicht", sym: "▲",
-    desc: "+30% Mine- und Farmproduktion. Das Arbeiterkollektiv verliert schnell an Zufriedenheit.",
+    desc: "+30% Mine- und Farmproduktion. Das Arbeiterkollektiv verliert schnell Zufriedenheit und wird gefährlich.",
     cost: { influence: 25 },
     rateEffects: { building_mult: { mine: 1.3, farm: 1.3 } },
     factionSatRate: { workers: -0.08 },
+    factionPowRate: { workers: 0.005 },
   },
   research_fund: {
     name: "Staatsforschungsprogramm", sym: "⬢",
-    desc: "+50% Forschungsproduktion aller Labore. Kostet 0.3 Credits/s. Wissenschaftler begeistert.",
+    desc: "+50% Forschungsproduktion. Kostet 0.3 Credits/s. Wissenschaftler begeistert und politisch aktiver.",
     cost: { influence: 35 },
     rateEffects: { building_mult: { lab: 1.5 }, resource_flat: { credits: -0.3 } },
     factionSatRate: { science: 0.05 },
+    factionPowRate: { science: 0.001 },
   },
   media_control: {
     name: "Staatliche Medienkontrolle", sym: "◆",
-    desc: "Gleichgeschaltete Medien: Corp und Orden gewinnen Zufriedenheit, Wissenschaftler verlieren.",
+    desc: "Corp und Orden gewinnen Zufriedenheit und Einfluss. Wissenschaftler verlieren beides.",
     cost: { influence: 40 },
     rateEffects: {},
     factionSatRate: { corp: 0.04, order: 0.04, science: -0.05 },
+    factionPowRate: { corp: 0.001, order: 0.001, science: -0.002 },
   },
   rationing: {
     name: "Rationierungsprogramm", sym: "◇",
@@ -160,5 +156,39 @@ const DECREES = {
     cost: { influence: 20 },
     rateEffects: { building_mult: { farm: 1.25 }, resource_flat: { credits: -0.25 } },
     factionSatRate: {},
+    factionPowRate: {},
+  },
+  // ── Zufriedenheitserlass ───────────────────────────────────────
+  volksfeste: {
+    name: "Volksfeste und Spiele", sym: "★",
+    desc: "Alle Fraktionen gewinnen Zufriedenheit (+0.02/s). Kostet laufend Nahrung und Credits. Macht sinkt leicht.",
+    cost: { influence: 40 },
+    rateEffects: { resource_flat: { food: -0.5, credits: -0.3 } },
+    factionSatRate: { corp: 0.02, science: 0.02, workers: 0.02, order: 0.02 },
+    factionPowRate: { corp: -0.001, science: -0.001, workers: -0.001, order: -0.001 },
+  },
+  workers_rights: {
+    name: "Arbeiterschutzgesetz", sym: "⚒",
+    desc: "Arbeiter +0.07/s Zufriedenheit, Macht sinkt. Unternehmerfront verliert Zufriedenheit. Mine/Farm −15%.",
+    cost: { influence: 30 },
+    rateEffects: { building_mult: { mine: 0.85, farm: 0.85 } },
+    factionSatRate: { workers: 0.07, corp: -0.03 },
+    factionPowRate: { workers: -0.003, corp: 0.002 },
+  },
+  corp_privileges: {
+    name: "Unternehmensprivilegien", sym: "₡",
+    desc: "Corp +0.06/s Zufriedenheit, Macht sinkt. Arbeiter verlieren Zufriedenheit. +0.2 Credits/s.",
+    cost: { influence: 30 },
+    rateEffects: { resource_flat: { credits: 0.2 } },
+    factionSatRate: { corp: 0.06, workers: -0.03 },
+    factionPowRate: { corp: -0.003, workers: 0.003 },
+  },
+  order_doctrine: {
+    name: "Ordensdoktrin", sym: "◈",
+    desc: "Orden +0.07/s Zufriedenheit, Macht sinkt. Wissenschaftler verlieren Zufriedenheit. +0.02/s Loyalität.",
+    cost: { influence: 30 },
+    rateEffects: { resource_flat: { loyalty: 0.02 } },
+    factionSatRate: { order: 0.07, science: -0.03 },
+    factionPowRate: { order: -0.003, science: 0.002 },
   },
 };
