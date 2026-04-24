@@ -32,6 +32,7 @@ function createInitialState() {
       { id: "workers", name: "Arbeiterkollektiv Ω-7",      sat: 31, inf: 22, col: "#f87171" },
       { id: "order",   name: "Orden d. Kosm. Wahrheit",    sat: 71, inf: 26, col: "#a78bfa" },
     ],
+    research: [],
     log: [
       { id: 1, sev: "ok",   msg: "Kepler Prime kolonisiert. Protokoll 7-B initiiert." },
       { id: 2, sev: "warn", msg: "Arbeiterkollektiv Ω-7: 'spontane Erholungsaktivitäten' in Sektor 3 gemeldet." },
@@ -66,21 +67,51 @@ function applyOffline(state) {
 }
 
 function recalcRates() {
-  // Reset rates for non-energy resources
+  // Reset rates and caps to base values
   for (const [k, r] of Object.entries(GS.resources)) {
     if (k !== 'energy') r.rate = BASE_RATES[k] || 0;
+    if (BASE_CAPS[k] !== undefined) r.cap = BASE_CAPS[k];
   }
 
-  // Energy: sum production from solar, sum drain from all others
+  // Aggregate research effects
+  const buildProdMult = {};
+  let drainMult = 1;
+  let loyaltyDecayMult = 1;
+  for (const id of (GS.research || [])) {
+    const r = RESEARCH[id];
+    if (!r) continue;
+    const e = r.effect;
+    if (e.type === 'prod_mult') {
+      buildProdMult[e.building] = (buildProdMult[e.building] || 1) * e.multiplier;
+    } else if (e.type === 'drain_mult') {
+      drainMult *= e.multiplier;
+    } else if (e.type === 'cap_increase') {
+      for (const res of e.resources) {
+        if (GS.resources[res]) GS.resources[res].cap += e.amount;
+      }
+    } else if (e.type === 'cap_increase_all') {
+      for (const k of Object.keys(GS.resources)) {
+        if (k !== 'energy') GS.resources[k].cap += e.amount;
+      }
+    } else if (e.type === 'loyalty_decay_mult') {
+      loyaltyDecayMult *= e.multiplier;
+    }
+  }
+
+  // Apply loyalty decay research
+  GS.resources.loyalty.decay = -0.005 * loyaltyDecayMult;
+
+  // Energy: sum production from solar (with multiplier), sum drain from all others
   let energyProd = 0;
   let energyDrain = 0;
   for (const b of GS.planet.buildings) {
     const meta = BLDG[b.type];
     if (!meta) continue;
     if (b.type === 'solar') {
-      energyProd += meta.prod.base + (b.level - 1) * meta.prod.perLevel;
+      const mult = buildProdMult['solar'] || 1;
+      energyProd += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * mult;
     } else if (meta.drain) {
-      energyDrain += meta.drain.base + (b.level - 1) * meta.drain.perLevel;
+      energyDrain += (meta.drain.base + (b.level - 1) * meta.drain.perLevel) * drainMult;
     }
   }
   GS.resources.energy.v = energyProd;
@@ -90,14 +121,15 @@ function recalcRates() {
   // Efficiency: if drain > prod, all buildings run at reduced capacity
   const efficiency = energyDrain > 0 ? Math.min(1, energyProd / energyDrain) : 1;
 
-  // Apply production rates scaled by efficiency
+  // Apply production rates scaled by efficiency and research multipliers
   for (const b of GS.planet.buildings) {
     if (b.type === 'solar') continue;
     const meta = BLDG[b.type];
     if (!meta?.resource) continue;
     const res = GS.resources[meta.resource];
     if (!res) continue;
-    res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency;
+    const mult = buildProdMult[b.type] || 1;
+    res.rate += (meta.prod.base + (b.level - 1) * meta.prod.perLevel) * efficiency * mult;
   }
 }
 

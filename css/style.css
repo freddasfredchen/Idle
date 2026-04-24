@@ -65,30 +65,30 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 .panel-title span { color: #2e4060; font-size: 9px; margin-left: 10px; font-family: 'Share Tech Mono', monospace; }
 #building-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 .bslot {
-  aspect-ratio: 1;
   border: 1px solid #151f30;
   border-radius: 3px;
   background: #070a11;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 8px 4px;
+  padding: 10px 6px 8px;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
   position: relative;
+  min-height: 90px;
 }
 .bslot.occupied { border-color: #243450; background: #0b1120; }
 .bslot.occupied:hover { border-color: #3a5070; background: #0d1528; }
 .bslot:not(.occupied):hover { border-color: #1e2d40; }
-.bslot-sym { font-size: 20px; line-height: 1; }
-.bslot-name { color: #445870; font-size: 8px; text-align: center; margin-top: 4px; line-height: 1.3; }
-.bslot-level { position: absolute; top: 3px; right: 5px; color: #c8aa4f; font-size: 8px; }
+.bslot-sym { font-size: 18px; line-height: 1; }
+.bslot-name { color: #445870; font-size: 10px; text-align: center; margin-top: 5px; line-height: 1.3; }
+.bslot-level { position: absolute; top: 3px; right: 5px; color: #c8aa4f; font-size: 9px; }
 .bslot-empty { color: #151e2d; font-size: 18px; }
-.bslot-cost { color: #1e3040; font-size: 7px; margin-top: 2px; text-align: center; line-height: 1.4; }
-.bslot-energy { font-size: 7px; margin-top: 2px; text-align: center; }
+.bslot-cost { color: #1e3040; font-size: 9px; margin-top: 3px; text-align: center; line-height: 1.5; }
+.bslot-energy { font-size: 9px; margin-top: 3px; text-align: center; }
 .bslot-energy.prod { color: #4a6020; }
 .bslot-energy.drain { color: #2a3828; }
 .bslot.can-afford { border-color: #1e3828; }
@@ -211,3 +211,23 @@ body { background: #070a12; color: #b8a98a; font-family: 'Share Tech Mono', mono
 }
 .build-btn:hover:not([disabled]) { color: #4ade80; border-color: #4ade80; }
 .build-btn[disabled] { color: #1e2d3a; border-color: #141e2a; cursor: default; }
+
+/* RESEARCH */
+.research-tier-label { color: #1a2840; font-size: 8px; letter-spacing: 2px; text-align: center; margin: 10px 0 6px; text-transform: uppercase; }
+.research-item { border: 1px solid #1a2840; border-radius: 3px; padding: 8px 10px; margin-bottom: 6px; }
+.research-item.done { border-color: #1e3828; background: #050f08; }
+.research-item.locked { opacity: 0.4; pointer-events: none; }
+.research-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.research-name { color: #c8aa4f; font-family: 'Cinzel', serif; font-size: 10px; }
+.research-desc { color: #354a60; font-size: 9px; line-height: 1.5; margin-bottom: 5px; }
+.research-req { color: #1e3040; font-size: 8px; margin-bottom: 4px; font-style: italic; }
+.research-meta { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.research-cost { color: #2a4060; font-size: 8px; flex: 1; }
+.research-done-label { color: #4a9060; font-size: 8px; }
+.research-btn {
+  background: none; border: 1px solid #1e3828; color: #3a6a48; cursor: pointer;
+  font-family: 'Share Tech Mono', monospace; font-size: 8px; padding: 2px 8px;
+  letter-spacing: 1px; transition: color 0.2s, border-color 0.2s; white-space: nowrap;
+}
+.research-btn:hover:not([disabled]) { color: #4ade80; border-color: #4ade80; }
+.research-btn[disabled] { color: #1e2d3a; border-color: #141e2a; cursor: default; }
