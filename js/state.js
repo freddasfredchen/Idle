@@ -91,6 +91,8 @@ function recalcRates() {
     const e = r.effect;
     if (e.type === 'prod_mult') {
       buildProdMult[e.building] = (buildProdMult[e.building] || 1) * e.multiplier;
+    } else if (e.type === 'prod_mult_multi') {
+      for (const bt of e.buildings) buildProdMult[bt] = (buildProdMult[bt] || 1) * e.multiplier;
     } else if (e.type === 'drain_mult') {
       researchDrainMult *= e.multiplier;
     } else if (e.type === 'cap_increase') {
@@ -172,6 +174,11 @@ function recalcRates() {
   // Decree flat rate bonuses
   for (const [res, delta] of Object.entries(decreeFlatRate)) {
     if (GS.resources[res]) GS.resources[res].rate += delta;
+  }
+  // Research flat rate bonuses
+  for (const id of (GS.research || [])) {
+    const e = RESEARCH[id]?.effect;
+    if (e?.type === 'resource_flat_rate' && GS.resources[e.resource]) GS.resources[e.resource].rate += e.delta;
   }
 
   // Trade ships + specialists
